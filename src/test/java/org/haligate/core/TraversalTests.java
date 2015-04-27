@@ -102,6 +102,24 @@ public class TraversalTests extends TestBase
     }
 
     @Test
+    public void indexedSecondaryKey( ) throws IOException
+    {
+        final Client client = Haligate.defaultClient( );
+        final Link movie = client.from( rootUri ).follow( "movies[0]", "movie[0]" ).asLink( );
+
+        assertThat( movie.toUri( ), equalTo( rootUri.resolve( "/movies/1" ) ) );
+    }
+
+    @Test
+    public void secondaryKey( ) throws IOException
+    {
+        final Client client = Haligate.defaultClient( );
+        final Link movie = client.from( rootUri ).follow( "movies", "movie[name:The Matrix]" ).asLink( );
+
+        assertThat( movie.toUri( ), equalTo( rootUri.resolve( "/movies/1" ) ) );
+    }
+
+    @Test
     public void basics( ) throws IOException
     {
         final Client client = Haligate.defaultClient( );

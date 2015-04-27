@@ -1,8 +1,5 @@
 package org.haligate.core;
 
-import static com.google.common.collect.Collections2.filter;
-import static com.google.common.collect.Iterables.getOnlyElement;
-
 import java.io.IOException;
 import java.net.URI;
 import java.util.*;
@@ -14,6 +11,7 @@ import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
 import com.google.common.net.HttpHeaders;
 import com.google.common.reflect.TypeToken;
 
@@ -48,21 +46,32 @@ public class Traversal
                 throw new IllegalStateException( "Cannot follow, no links of relation '" + relName + "' found in resource " + resource );
             } else if( locations.size( ) > 1 ) {
                 if( secondaryIndex != null ) {
-                    selectedLink = locations.get( Integer.parseInt( secondaryIndex ) );
+                	final int index = Integer.parseInt( secondaryIndex );
+                	if( index < 0 || index >= locations.size( ) ) {
+                		throw new IllegalStateException( "Cannot follow, index " + secondaryIndex + " given but only " + locations.size( ) + " links available in resource " + resource );
+                	}
+                    selectedLink = locations.get( index );
                 } else if( secondaryKeyAttribute != null && secondaryKeyValue != null ) {
-                    selectedLink = getOnlyElement( filter( locations, new Predicate< Link >( ) {
-                        @Override
-                        public boolean apply( final Link input )
-                        {
-                            final Map< String, String > properties = input.getProperties( );
-                            return properties.containsKey( secondaryKeyAttribute ) && properties.get( secondaryKeyAttribute ).equals( secondaryKeyValue );
-                        }
-                    } ) );
+					final List< Link > matchingLinks = FluentIterable.from( locations ).filter( new SecondaryKeyPredicate( secondaryKeyAttribute, secondaryKeyValue ) ).toList( );
+					if( matchingLinks.isEmpty( ) ) {
+            			throw new IllegalStateException( "Cannot follow, secondary key [" + secondaryKeyAttribute + ":" + secondaryKeyValue + "] does not apply to any links in resource " + resource );
+					} else if( matchingLinks.size( ) > 1 ) {
+            			throw new IllegalStateException( "Cannot follow, secondary key [" + secondaryKeyAttribute + ":" + secondaryKeyValue + "] matches multiple(" + matchingLinks.size( ) + ") links in resource " + resource );
+					} else {
+						selectedLink = matchingLinks.get( 0 );
+					}
                 } else {
                     throw new IllegalStateException( "Cannot follow, multiple links of relation '" + relName + "' found in resource " + resource + " but no secondary key given" );
                 }
             } else {
-                selectedLink = locations.get( 0 );
+            	selectedLink = locations.get( 0 );
+            	if( secondaryIndex != null && Integer.parseInt( secondaryIndex ) != 0 ) {
+            		throw new IllegalStateException( "Cannot follow, index " + secondaryIndex + " given but only " + locations.size( ) + " links available in resource " + resource );
+            	} else if( secondaryKeyAttribute != null || secondaryKeyValue != null ) {
+            		if( !new SecondaryKeyPredicate( secondaryKeyAttribute, secondaryKeyValue ).apply( selectedLink ) ) {
+            			throw new IllegalStateException( "Cannot follow, secondary key [" + secondaryKeyAttribute + ":" + secondaryKeyValue + "] does not apply to any links in resource " + resource );
+            		}
+            	}
             }
             traversor = new Traversal( httpClient, context, selectedLink.toUri( ) );
         }
@@ -102,5 +111,24 @@ public class Traversal
 	public < T > T asObject( final TypeToken< T > typeToken ) throws IOException
 	{
 		return (T)asResource( typeToken.getRawType( ) ).getBody( );
+	}
+
+	private static class SecondaryKeyPredicate implements Predicate< Link >
+	{
+		private final String secondaryKeyAttribute;
+		private final String secondaryKeyValue;
+
+		private SecondaryKeyPredicate( final String secondaryKeyAttribute, final String secondaryKeyValue )
+		{
+			this.secondaryKeyAttribute = secondaryKeyAttribute;
+			this.secondaryKeyValue = secondaryKeyValue;
+		}
+
+		@Override
+		public boolean apply( final Link input )
+		{
+		    final Map< String, String > properties = input.getProperties( );
+		    return properties.containsKey( secondaryKeyAttribute ) && properties.get( secondaryKeyAttribute ).equals( secondaryKeyValue );
+		}
 	}
 }
