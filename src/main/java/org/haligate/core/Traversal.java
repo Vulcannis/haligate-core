@@ -10,6 +10,7 @@ import java.util.regex.*;
 
 import org.apache.http.client.methods.*;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 
 import com.google.common.base.Predicate;
@@ -21,10 +22,12 @@ public class Traversal
 
     private final URI currentLocation;
     private final CloseableHttpClient httpClient;
+	private final HttpContext context;
 
-    protected Traversal( final CloseableHttpClient httpClient, final URI root )
+    protected Traversal( final CloseableHttpClient httpClient, final HttpContext context , final URI root )
     {
         this.httpClient = httpClient;
+		this.context = context;
         currentLocation = root;
     }
 
@@ -60,7 +63,7 @@ public class Traversal
             } else {
                 selectedLink = locations.get( 0 );
             }
-            traversor = new Traversal( httpClient, selectedLink.toUri( ) );
+            traversor = new Traversal( httpClient, context, selectedLink.toUri( ) );
         }
         return traversor;
     }
@@ -69,7 +72,7 @@ public class Traversal
     {
         final HttpGet request = new HttpGet( currentLocation );
         request.addHeader( HttpHeaders.ACCEPT, Haligate.jsonHalContentType );
-        try( final CloseableHttpResponse response = httpClient.execute( request ) ) {
+        try( final CloseableHttpResponse response = httpClient.execute( request, context ) ) {
             final String content = EntityUtils.toString( response.getEntity( ) );
             if( response.getStatusLine( ).getStatusCode( ) / 100 != 2 ) {
                 throw new IOException( "Unexpected response for resource " + currentLocation + ": " + response );

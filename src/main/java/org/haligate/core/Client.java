@@ -3,23 +3,26 @@ package org.haligate.core;
 import java.net.URI;
 
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.protocol.HttpContext;
 
 public class Client
 {
     private final CloseableHttpClient httpClient;
+	private final HttpContext context;
 
-    public Client( final CloseableHttpClient httpClient )
+    public Client( final CloseableHttpClient httpClient, final HttpContext context  )
     {
         this.httpClient = httpClient;
+		this.context = context;
     }
 
     public Traversal from( final URI root )
     {
-        return new Traversal( httpClient, root );
+        return new Traversal( httpClient, context, root );
     }
 
     public Traversal from( final Link link )
     {
-        return new Traversal( httpClient, link.toUri( ) );
+        return new Traversal( httpClient, context, link.toUri( ) );
     }
 }
