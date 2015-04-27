@@ -139,4 +139,13 @@ public class TraversalTests extends TestBase
         assertThat( results.getLinks( ).get( "actor" ), hasSize( 1 ) );
         assertThat( results.getLinks( ).get( "actor" ).get( 0 ).toUri( ), equalTo( rootUri.resolve( "/actors/1" ) ) );
     }
+
+    @Test
+    public void curies( ) throws IOException
+    {
+        final Client client = Haligate.defaultClient( );
+        final Link actors = client.from( rootUri ).follow( "http://example.com/rels/actors" ).asLink( );
+
+        assertThat( actors.toUri( ), equalTo( rootUri.resolve( "/actors" ) ) );
+    }
 }

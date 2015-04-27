@@ -29,15 +29,15 @@ public class TestBase
 	    final RepresentationFactory representationFactory = new StandardRepresentationFactory( );
 
 	    rootUri = URI.create( "http://localhost:" + port( ) );
-	    final Representation root = representationFactory.newRepresentation( rootUri.resolve( "" ) );
-	    final Representation movies = representationFactory.newRepresentation( rootUri.resolve( "/movies" ) );
-	    final Representation actors = representationFactory.newRepresentation( rootUri.resolve( "/actors" ) );
-	    final Representation theMatrix = representationFactory.newRepresentation( rootUri.resolve( "/movies/1" ) );
-	    final Representation johnWick = representationFactory.newRepresentation( rootUri.resolve( "/movies/2" ) );
-	    final Representation keanuReeves = representationFactory.newRepresentation( rootUri.resolve( "/actors/1" ) );
-	    final Representation laurenceFishborne = representationFactory.newRepresentation( rootUri.resolve( "/actors/2" ) );
-	    final Representation releases1999 = representationFactory.newRepresentation( rootUri.resolve( "/movies/released/1999" ) );
-	    final Representation releases2014 = representationFactory.newRepresentation( rootUri.resolve( "/movies/released/2014" ) );
+	    final Representation root = representationFactory.newRepresentation( rootUri.resolve( "" ) ).withNamespace( "ex", "http://example.com/rels/{rel}" );
+	    final Representation movies = representationFactory.newRepresentation( rootUri.resolve( "/movies" ) ).withNamespace( "ex", "http://example.com/rels/{rel}" );
+	    final Representation actors = representationFactory.newRepresentation( rootUri.resolve( "/actors" ) ).withNamespace( "ex", "http://example.com/rels/{rel}" );
+	    final Representation theMatrix = representationFactory.newRepresentation( rootUri.resolve( "/movies/1" ) ).withNamespace( "ex", "http://example.com/rels/{rel}" );
+	    final Representation johnWick = representationFactory.newRepresentation( rootUri.resolve( "/movies/2" ) ).withNamespace( "ex", "http://example.com/rels/{rel}" );
+	    final Representation keanuReeves = representationFactory.newRepresentation( rootUri.resolve( "/actors/1" ) ).withNamespace( "ex", "http://example.com/rels/{rel}" );
+	    final Representation laurenceFishborne = representationFactory.newRepresentation( rootUri.resolve( "/actors/2" ) ).withNamespace( "ex", "http://example.com/rels/{rel}" );
+	    final Representation releases1999 = representationFactory.newRepresentation( rootUri.resolve( "/movies/released/1999" ) ).withNamespace( "ex", "http://example.com/rels/{rel}" );
+	    final Representation releases2014 = representationFactory.newRepresentation( rootUri.resolve( "/movies/released/2014" ) ).withNamespace( "ex", "http://example.com/rels/{rel}" );
 
 	    link( root, "movies", movies );
 	    link( root, "actors", actors );
@@ -90,7 +90,7 @@ public class TestBase
 				final ImmutableMap< String, Representation > actors = ImmutableMap.of( "Keanu Reeves", keanuReeves, "Laurence Fishborne", laurenceFishborne );
 				for( final Entry< String, Representation > entry: actors.entrySet( ) ) {
 					if( entry.getKey( ).contains( name ) ) {
-						final Representation results = representationFactory.newRepresentation( request.getURI( ) );
+						final Representation results = representationFactory.newRepresentation( request.getURI( ) ).withNamespace( "ex", "http://example.com/rels/{rel}" );;
 						link( results, "actor", entry.getValue( ), entry.getKey( ) );
 						return StubResponse.builder( ).body( results.toString( jsonHalContentType ), Charsets.UTF_8 ).build( );
 					}
@@ -108,6 +108,7 @@ public class TestBase
 	private void link( final Representation from, final String rel, final Representation to, final String name )
 	{
 	    from.withLink( rel, to.getResourceLink( ).getHref( ), name, null, null, null );
+	    from.withLink( "ex:" + rel, to.getResourceLink( ).getHref( ), name, null, null, null );
 	}
 
 	private void mockResources( final Representation... resources )
