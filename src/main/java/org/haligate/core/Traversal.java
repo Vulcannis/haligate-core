@@ -11,7 +11,7 @@ import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 
 import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
+import com.google.common.collect.*;
 import com.google.common.net.HttpHeaders;
 import com.google.common.reflect.TypeToken;
 
@@ -22,6 +22,7 @@ public class Traversal
     private final URI currentLocation;
     private final CloseableHttpClient httpClient;
 	private final HttpContext context;
+	private final Map< String, Object > parameters = Maps.newHashMap( );
 
     protected Traversal( final CloseableHttpClient httpClient, final HttpContext context , final URI root )
     {
@@ -29,6 +30,24 @@ public class Traversal
 		this.context = context;
         currentLocation = root;
     }
+
+	public Traversal with( final String param, final String value )
+	{
+		parameters.put( param, value );
+		return this;
+	}
+
+	public Traversal with( final String param, final Collection< String > value )
+	{
+		parameters.put( param, value );
+		return this;
+	}
+
+	public Traversal with( final Map< String, Object > values )
+	{
+		parameters.putAll( values );
+		return this;
+	}
 
 	public Traversal follow( final String... rels ) throws IOException
     {
@@ -39,7 +58,7 @@ public class Traversal
                 throw new IllegalArgumentException( "Cannot follow relation '" + rel + "'" );
             }
             final String relName = matcher.group( 1 ), secondaryIndex = matcher.group( 2 ), secondaryKeyAttribute = matcher.group( 3 ), secondaryKeyValue = matcher.group( 4 );
-            final Resource< Void > resource = traversor.asResource( Void.class );
+            final Resource< ? > resource = traversor.asResource( );
             final List< Link > locations = resource.getLinks( ).get( relName );
             final Link selectedLink;
             if( locations.size( ) == 0 ) {
@@ -73,10 +92,15 @@ public class Traversal
             		}
             	}
             }
-            traversor = new Traversal( httpClient, context, selectedLink.toUri( ) );
+            traversor = new Traversal( httpClient, context, selectedLink.toUri( parameters ) );
         }
         return traversor;
     }
+
+	public Resource< ? > asResource( ) throws IOException
+	{
+		return asResource( Void.class );
+	}
 
     public < T > Resource< T > asResource( final Class< T > type ) throws IOException
     {

@@ -2,6 +2,7 @@ package org.haligate.core;
 
 import static org.haligate.core.OurMatchers.hasKey;
 import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
@@ -120,14 +121,22 @@ public class TraversalTests extends TestBase
     }
 
     @Test
-    public void basics( ) throws IOException
+    public void linkPathTemplates( ) throws IOException
     {
         final Client client = Haligate.defaultClient( );
-        final Resource< Actor > cast = client.from( rootUri ).follow( "movies", "movie[0]", "cast[name:Keanu Reeves]" ).asResource( Actor.class );
+        final Link released = client.from( rootUri ).follow( "movies" ).with( "year", "1999" ).follow( "released" ).asLink( );
 
-        assertThat( cast.getSelfLink( ).toUri( ), equalTo( rootUri.resolve( "/actors/1" ) ) );
-        final Actor body = cast.getBody( );
-        assertThat( body, notNullValue( ) );
-        assertThat( body.getName( ), equalTo( "Keanu Reeves" ) );
+        assertThat( released.toUri( ), equalTo( rootUri.resolve( "/movies/released/1999" ) ) );
+    }
+
+    @Test
+    public void linkParameterTemplates( ) throws IOException
+    {
+        final Client client = Haligate.defaultClient( );
+        final Resource< ? > results = client.from( rootUri ).follow( "actors" ).with( "name", "Keanu" ).follow( "search" ).asResource( );
+
+        assertThat( results.getLinks( ), hasKey( "actor" ) );
+        assertThat( results.getLinks( ).get( "actor" ), hasSize( 1 ) );
+        assertThat( results.getLinks( ).get( "actor" ).get( 0 ).toUri( ), equalTo( rootUri.resolve( "/actors/1" ) ) );
     }
 }
