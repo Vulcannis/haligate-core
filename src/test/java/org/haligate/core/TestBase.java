@@ -1,5 +1,6 @@
 package org.haligate.core;
 
+import static java.util.Arrays.asList;
 import static net.jadler.Jadler.*;
 import static org.haligate.core.Haligate.jsonHalContentType;
 
@@ -37,6 +38,7 @@ public class TestBase
 	    link( movies, "movie", theMatrix, "The Matrix" );
 	    link( movies, "movie", johnWick, "John Wick" );
 
+	    actors.withProperty( "names", asList( "Keanu Reeves", "Laurence Fishborne" ) );
 	    link( actors, "root", root );
 	    link( actors, "actor", keanuReeves, "Keanu Reeves" );
 	    link( actors, "actor", laurenceFishborne, "Laurence Fishborne" );

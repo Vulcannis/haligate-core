@@ -15,6 +15,7 @@ import org.apache.http.util.EntityUtils;
 
 import com.google.common.base.Predicate;
 import com.google.common.net.HttpHeaders;
+import com.google.common.reflect.TypeToken;
 
 public class Traversal
 {
@@ -31,7 +32,7 @@ public class Traversal
         currentLocation = root;
     }
 
-    public Traversal follow( final String... rels ) throws IOException
+	public Traversal follow( final String... rels ) throws IOException
     {
         Traversal traversor = this;
         for( final String rel: rels ) {
@@ -81,8 +82,25 @@ public class Traversal
         }
     }
 
+    @SuppressWarnings( "unchecked" )
+	public < T > Resource< T > asResource( final TypeToken< T > typeToken ) throws IOException
+    {
+    	return (Resource< T >)asResource( typeToken.getRawType( ) );
+    }
+
     public Link asLink( ) throws IOException
     {
         return asResource( Void.class ).getSelfLink( );
     }
+
+    public < T > T asObject( final Class< T > objectClass ) throws IOException
+    {
+    	return asResource( objectClass ).getBody( );
+    }
+
+	@SuppressWarnings( "unchecked" )
+	public < T > T asObject( final TypeToken< T > typeToken ) throws IOException
+	{
+		return (T)asResource( typeToken.getRawType( ) ).getBody( );
+	}
 }
