@@ -1,5 +1,6 @@
 package org.haligate.core;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonMap;
 
 import java.io.IOException;
@@ -13,67 +14,102 @@ import com.google.common.collect.*;
 
 public class Resource< T >
 {
-    private final T body;
-    private final ListMultimap< String, Link > links;
     private final String content;
+    private final T body;
+    private final ListMultimap< String, Link > links = ArrayListMultimap.create( );
+    private final Map< String, UriTemplate > curieTemplates = Maps.newHashMap( );
+    private final Map< Link, JsonNode > embeddedResources = Maps.newHashMap( );
 
     protected Resource( final String content, final Class< T > type ) throws IOException
     {
-        this.content = content;
         final ObjectMapper mapper = new ObjectMapper( );
         final JsonNode root = mapper.readTree( content );
-        links = readLinks( mapper, root );
+        readCurries( curieTemplates, mapper, root );
+        body = init( mapper, root, type, curieTemplates, links, embeddedResources );
+        this.content = body == null ? content : null;
+    }
+
+    protected Resource( final JsonNode root, final Class< T > type, final Map< String, UriTemplate > curieTemplates ) throws IOException
+    {
+        this.curieTemplates.putAll( curieTemplates );
+        body = init( new ObjectMapper( ), root, type, curieTemplates, links, embeddedResources );
+        this.content = body == null ? root.toString( ) : null;
+    }
+
+    private static < T > T init( final ObjectMapper mapper, final JsonNode root, final Class< T > type, final Map< String, UriTemplate > curieTemplates, final ListMultimap< String, Link > links, final Map< Link, JsonNode > embeddedResources ) throws IOException
+    {
+        readLinks( mapper, root, curieTemplates, links );
+        readEmbeds( mapper, root, curieTemplates, links, embeddedResources );
         if( type == Void.class ) {
-            body = null;
+            return null;
         } else {
             mapper.addMixIn( type, IgnoreHalProperties.class );
-            body = mapper.treeToValue( root, type );
+            return mapper.treeToValue( root, type );
         }
     }
 
-    private static ListMultimap< String, Link > readLinks( final ObjectMapper mapper , final JsonNode root ) throws IOException
+    private static void readCurries( final Map< String, UriTemplate > curieTemplates, final ObjectMapper mapper, final JsonNode root )
     {
-        final ListMultimap< String, Link > links = ArrayListMultimap.create( );
-        final JsonNode curies = root.get( "_links" ).get( "curies" );
-        final Map< String, UriTemplate > curieTemplates = Maps.newHashMap( );
-        if( curies != null ) {
-        	for( final JsonNode curie: curies ) {
-				final String href = curie.get( "href" ).asText( );
-				final String name = curie.get( "name" ).asText( );
-				curieTemplates.put( name, UriTemplate.fromTemplate( href ) );
-			}
+        for( final JsonNode curie: root.path( "_links" ).path( "curies" ) ) {
+            final String href = curie.get( "href" ).asText( );
+            final String name = curie.get( "name" ).asText( );
+            curieTemplates.put( name, UriTemplate.fromTemplate( href ) );
         }
-        for( final Iterator< Map.Entry< String, JsonNode > > it = root.get( "_links" ).fields( ); it.hasNext( ); ) {
+    }
+
+    private static void readLinks( final ObjectMapper mapper, final JsonNode root, final Map< String, UriTemplate > curieTemplates, final ListMultimap< String, Link > links ) throws IOException
+    {
+        for( final Iterator< Map.Entry< String, JsonNode > > it = root.path( "_links" ).fields( ); it.hasNext( ); ) {
             final Entry< String, JsonNode > entry = it.next( );
             if( entry.getKey( ).equals( "curies" ) ) {
-            	continue;
+                continue;
             }
             final String rel = parseRel( curieTemplates, entry.getKey( ) );
+            final Iterable< JsonNode > nodes;
             if( entry.getValue( ).isArray( ) ) {
-                for( final JsonNode element: entry.getValue( ) ) {
-                    final Link link = mapper.treeToValue( element, Link.class );
-                    links.put( rel, link );
-                }
+                nodes = entry.getValue( );
             } else {
-                final Link link = mapper.treeToValue( entry.getValue( ), Link.class );
+                nodes = asList( entry.getValue( ) );
+            }
+            for( final JsonNode element: nodes ) {
+                final Link link = mapper.treeToValue( element, Link.class );
                 links.put( rel, link );
             }
         }
-        return links;
+    }
+
+    private static void readEmbeds( final ObjectMapper mapper, final JsonNode root, final Map< String, UriTemplate > curieTemplates, final ListMultimap< String, Link > embeds, final Map< Link, JsonNode > embeddedResources ) throws IOException
+    {
+        for( final Iterator< Map.Entry< String, JsonNode > > it = root.path( "_embedded" ).fields( ); it.hasNext( ); ) {
+            final Entry< String, JsonNode > entry = it.next( );
+            final String rel = parseRel( curieTemplates, entry.getKey( ) );
+            final Iterable< JsonNode > nodes;
+            if( entry.getValue( ).isArray( ) ) {
+                nodes = entry.getValue( );
+            } else {
+                nodes = asList( entry.getValue( ) );
+            }
+            for( final JsonNode resource: nodes ) {
+                final JsonNode selfLink = resource.path( "_links" ).path( "self" );
+                final Link link = mapper.treeToValue( selfLink, Link.class );
+                embeds.put( rel, link );
+                embeddedResources.put( link, resource );
+            }
+        }
     }
 
     private static String parseRel( final Map< String, UriTemplate > curieTemplates, final String rel )
-	{
-    	final int index = rel.indexOf( ':' );
-    	if( index == -1 ) {
-    		return rel;
-    	} else {
-    		final String name = rel.substring( 0, index ), value = rel.substring( index + 1 );
-    		return curieTemplates.get( name ).expand( singletonMap( "rel", (Object)value ) );
-    	}
-	}
+    {
+        final int index = rel.indexOf( ':' );
+        if( index == -1 ) {
+            return rel;
+        } else {
+            final String name = rel.substring( 0, index ), value = rel.substring( index + 1 );
+            return curieTemplates.get( name ).expand( singletonMap( "rel", (Object)value ) );
+        }
+    }
 
-	public Link getSelfLink( )
+    public Link getSelfLink( )
     {
         return Iterables.getOnlyElement( links.get( "self" ) );
     }
@@ -86,6 +122,26 @@ public class Resource< T >
     public ListMultimap< String, Link > getLinks( )
     {
         return Multimaps.unmodifiableListMultimap( links );
+    }
+
+    public boolean hasEmbeddedResourceFor( final Link link )
+    {
+        return embeddedResources.containsKey( link );
+    }
+
+    public Resource< ? > getEmbeddedResourceFor( final Link link ) throws IOException
+    {
+        return getEmbeddedResourceFor( link, Void.class );
+    }
+
+    public < S > Resource< S > getEmbeddedResourceFor( final Link link, final Class< S > type ) throws IOException
+    {
+        final JsonNode resourceNode = embeddedResources.get( link );
+        if( resourceNode == null ) {
+            return null;
+        } else {
+            return new Resource< S >( resourceNode, type, curieTemplates );
+        }
     }
 
     @Override

@@ -5,24 +5,21 @@ import java.net.URI;
 import java.util.*;
 import java.util.regex.*;
 
-import org.apache.http.client.methods.*;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.protocol.HttpContext;
-import org.apache.http.util.EntityUtils;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.*;
-import com.google.common.net.HttpHeaders;
 import com.google.common.reflect.TypeToken;
 
-public class Traversal
+public abstract class Traversal
 {
     private static final Pattern followRelPattern = Pattern.compile( "([^\\[]+)(?:\\[(?:(\\d+)|(?:([^:]+):([^\\]]+)))\\])?" );
 
-    private final URI currentLocation;
-    private final CloseableHttpClient httpClient;
-	private final HttpContext context;
-	private final Map< String, Object > parameters = Maps.newHashMap( );
+    protected final URI currentLocation;
+    protected final CloseableHttpClient httpClient;
+    protected final HttpContext context;
+    protected final Map< String, Object > parameters = Maps.newHashMap( );
 
     protected Traversal( final CloseableHttpClient httpClient, final HttpContext context , final URI root )
     {
@@ -92,7 +89,12 @@ public class Traversal
             		}
             	}
             }
-            traversor = new Traversal( httpClient, context, selectedLink.toUri( parameters ) );
+            if( resource.hasEmbeddedResourceFor( selectedLink ) ) {
+                traversor = new EmbeddedTraversal( httpClient, context, resource, selectedLink );
+            } else {
+                final URI nextUri = selectedLink.toUri( parameters );
+                traversor = new RetrievingTraversal( httpClient, context, nextUri );
+            }
         }
         return traversor;
     }
@@ -102,18 +104,7 @@ public class Traversal
 		return asResource( Void.class );
 	}
 
-    public < T > Resource< T > asResource( final Class< T > type ) throws IOException
-    {
-        final HttpGet request = new HttpGet( currentLocation );
-        request.addHeader( HttpHeaders.ACCEPT, Haligate.jsonHalContentType );
-        try( final CloseableHttpResponse response = httpClient.execute( request, context ) ) {
-            final String content = EntityUtils.toString( response.getEntity( ) );
-            if( response.getStatusLine( ).getStatusCode( ) / 100 != 2 ) {
-                throw new IOException( "Unexpected response for resource " + currentLocation + ": " + response );
-            }
-            return new Resource< T >( content, type );
-        }
-    }
+    public abstract < T > Resource< T > asResource( final Class< T > type ) throws IOException;
 
     @SuppressWarnings( "unchecked" )
 	public < T > Resource< T > asResource( final TypeToken< T > typeToken ) throws IOException

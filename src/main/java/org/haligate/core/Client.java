@@ -18,11 +18,11 @@ public class Client
 
     public Traversal from( final URI root )
     {
-        return new Traversal( httpClient, context, root );
+        return new RetrievingTraversal( httpClient, context, root );
     }
 
     public Traversal from( final Link link )
     {
-        return new Traversal( httpClient, context, link.toUri( ) );
+        return new RetrievingTraversal( httpClient, context, link.toUri( ) );
     }
 }

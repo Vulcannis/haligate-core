@@ -1,5 +1,6 @@
 package org.haligate.core;
 
+import static net.jadler.Jadler.verifyThatRequest;
 import static org.haligate.core.OurMatchers.hasKey;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.hasSize;
@@ -147,5 +148,30 @@ public class TraversalTests extends TestBase
         final Link actors = client.from( rootUri ).follow( "http://example.com/rels/actors" ).asLink( );
 
         assertThat( actors.toUri( ), equalTo( rootUri.resolve( "/actors" ) ) );
+    }
+
+    @Test
+    public void embeddedResources( ) throws IOException
+    {
+        final Client client = Haligate.defaultClient( );
+        final Resource< ? > released = client.from( rootUri ).follow( "movies" ).with( "year", "1999" ).follow( "released" ).asResource( );
+
+        assertThat( released.getLinks( ), hasKey( "movie" ) );
+        final Link movieLink = released.getLinks( ).get( "movie" ).get( 0 );
+        assertThat( released.hasEmbeddedResourceFor( movieLink ), equalTo( true ) );
+        final Resource< ? > movie = released.getEmbeddedResourceFor( movieLink );
+        assertThat( movie.getSelfLink( ).toUri( ), equalTo( rootUri.resolve( "/movies/1" ) ) );
+    }
+
+    @Test
+    public void embeddedResourcesAreReturnedIfPossible( ) throws IOException
+    {
+        final Client client = Haligate.defaultClient( );
+        final Resource< ? > movie = client.from( rootUri ).follow( "movies" ).with( "year", "1999" ).follow( "released", "movie[0]" ).asResource( );
+
+        assertThat( movie.getSelfLink( ).toUri( ), equalTo( rootUri.resolve( "/movies/1" ) ) );
+        verifyThatRequest( ).
+            havingPathEqualTo( "/movies/1" ).
+            receivedNever( );
     }
 }

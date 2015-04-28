@@ -58,13 +58,9 @@ public class TestBase
 	    link( theMatrix, "cast", keanuReeves, "Keanu Reeves" );
 	    link( theMatrix, "cast", laurenceFishborne, "Laurence Fishborne" );
 
-	    link( releases1999, "movies", theMatrix );
-
 	    johnWick.withProperty( "title", "John Wick" );
 	    link( johnWick, "movies", movies );
 	    link( johnWick, "cast", keanuReeves, "Keanu Reeves" );
-
-	    link( releases2014, "movies", johnWick );
 
 	    keanuReeves.withProperty( "name", "Keanu Reeves" );
 	    link( keanuReeves, "actors", actors );
@@ -74,6 +70,9 @@ public class TestBase
 	    laurenceFishborne.withProperty( "name", "Laurence Fishborne" );
 	    link( laurenceFishborne, "actors", actors );
 	    link( laurenceFishborne, "filmography", theMatrix, "The Matrix" );
+
+        embed( releases1999, "movie", theMatrix );
+        embed( releases2014, "movie", johnWick );
 
 	    mockResources( root, movies, actors, theMatrix, keanuReeves, releases1999, releases2014 );
 
@@ -110,6 +109,11 @@ public class TestBase
 	    from.withLink( rel, to.getResourceLink( ).getHref( ), name, null, null, null );
 	    from.withLink( "ex:" + rel, to.getResourceLink( ).getHref( ), name, null, null, null );
 	}
+
+    private void embed( final Representation from, final String rel, final Representation to )
+    {
+        from.withRepresentation( rel, to );
+    }
 
 	private void mockResources( final Representation... resources )
 	{
