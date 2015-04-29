@@ -20,6 +20,6 @@ public class EmbeddedTraversal extends Traversal
     @Override
     public < T > Resource< T > asResource( final Class< T > type ) throws IOException
     {
-        return resource.getEmbeddedResourceFor( nextResource, type );
+        return resource.getEmbeddedResourceFor( nextResource.toUri( ), type );
     }
 }

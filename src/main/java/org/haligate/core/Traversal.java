@@ -89,10 +89,10 @@ public abstract class Traversal
             		}
             	}
             }
-            if( resource.hasEmbeddedResourceFor( selectedLink ) ) {
+            final URI nextUri = selectedLink.toUri( parameters );
+            if( resource.hasEmbeddedResourceFor( nextUri ) ) {
                 traversor = new EmbeddedTraversal( httpClient, context, resource, selectedLink );
             } else {
-                final URI nextUri = selectedLink.toUri( parameters );
                 traversor = new RetrievingTraversal( httpClient, context, nextUri );
             }
         }

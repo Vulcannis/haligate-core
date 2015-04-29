@@ -157,9 +157,9 @@ public class TraversalTests extends TestBase
         final Resource< ? > released = client.from( rootUri ).follow( "movies" ).with( "year", "1999" ).follow( "released" ).asResource( );
 
         assertThat( released.getLinks( ), hasKey( "movie" ) );
-        final Link movieLink = released.getLinks( ).get( "movie" ).get( 0 );
-        assertThat( released.hasEmbeddedResourceFor( movieLink ), equalTo( true ) );
-        final Resource< ? > movie = released.getEmbeddedResourceFor( movieLink );
+        final URI movieUri = released.getLinks( ).get( "movie" ).get( 0 ).toUri( );
+        assertThat( released.hasEmbeddedResourceFor( movieUri ), equalTo( true ) );
+        final Resource< ? > movie = released.getEmbeddedResourceFor( movieUri );
         assertThat( movie.getSelfLink( ).toUri( ), equalTo( rootUri.resolve( "/movies/1" ) ) );
     }
 

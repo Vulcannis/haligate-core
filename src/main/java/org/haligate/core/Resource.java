@@ -4,6 +4,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonMap;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -18,7 +19,7 @@ public class Resource< T >
     private final T body;
     private final ListMultimap< String, Link > links = ArrayListMultimap.create( );
     private final Map< String, UriTemplate > curieTemplates = Maps.newHashMap( );
-    private final Map< Link, JsonNode > embeddedResources = Maps.newHashMap( );
+    private final Map< URI, JsonNode > embeddedResources = Maps.newHashMap( );
 
     protected Resource( final String content, final Class< T > type ) throws IOException
     {
@@ -36,7 +37,7 @@ public class Resource< T >
         this.content = body == null ? root.toString( ) : null;
     }
 
-    private static < T > T init( final ObjectMapper mapper, final JsonNode root, final Class< T > type, final Map< String, UriTemplate > curieTemplates, final ListMultimap< String, Link > links, final Map< Link, JsonNode > embeddedResources ) throws IOException
+    private static < T > T init( final ObjectMapper mapper, final JsonNode root, final Class< T > type, final Map< String, UriTemplate > curieTemplates, final ListMultimap< String, Link > links, final Map< URI, JsonNode > embeddedResources ) throws IOException
     {
         readLinks( mapper, root, curieTemplates, links );
         readEmbeds( mapper, root, curieTemplates, links, embeddedResources );
@@ -78,7 +79,7 @@ public class Resource< T >
         }
     }
 
-    private static void readEmbeds( final ObjectMapper mapper, final JsonNode root, final Map< String, UriTemplate > curieTemplates, final ListMultimap< String, Link > embeds, final Map< Link, JsonNode > embeddedResources ) throws IOException
+    private static void readEmbeds( final ObjectMapper mapper, final JsonNode root, final Map< String, UriTemplate > curieTemplates, final ListMultimap< String, Link > embeds, final Map< URI, JsonNode > embeddedResources ) throws IOException
     {
         for( final Iterator< Map.Entry< String, JsonNode > > it = root.path( "_embedded" ).fields( ); it.hasNext( ); ) {
             final Entry< String, JsonNode > entry = it.next( );
@@ -93,7 +94,7 @@ public class Resource< T >
                 final JsonNode selfLink = resource.path( "_links" ).path( "self" );
                 final Link link = mapper.treeToValue( selfLink, Link.class );
                 embeds.put( rel, link );
-                embeddedResources.put( link, resource );
+                embeddedResources.put( link.toUri( ), resource );
             }
         }
     }
@@ -124,19 +125,19 @@ public class Resource< T >
         return Multimaps.unmodifiableListMultimap( links );
     }
 
-    public boolean hasEmbeddedResourceFor( final Link link )
+    public boolean hasEmbeddedResourceFor( final URI uri )
     {
-        return embeddedResources.containsKey( link );
+        return embeddedResources.containsKey( uri );
     }
 
-    public Resource< ? > getEmbeddedResourceFor( final Link link ) throws IOException
+    public Resource< ? > getEmbeddedResourceFor( final URI uri ) throws IOException
     {
-        return getEmbeddedResourceFor( link, Void.class );
+        return getEmbeddedResourceFor( uri, Void.class );
     }
 
-    public < S > Resource< S > getEmbeddedResourceFor( final Link link, final Class< S > type ) throws IOException
+    public < S > Resource< S > getEmbeddedResourceFor( final URI uri, final Class< S > type ) throws IOException
     {
-        final JsonNode resourceNode = embeddedResources.get( link );
+        final JsonNode resourceNode = embeddedResources.get( uri );
         if( resourceNode == null ) {
             return null;
         } else {
