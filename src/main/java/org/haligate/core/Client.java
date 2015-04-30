@@ -16,13 +16,13 @@ public class Client
 		this.context = context;
     }
 
-    public Traversal from( final URI root )
+    public Traversing from( final URI root )
     {
-        return new RetrievingTraversal( httpClient, context, root );
+        return new HttpTraversing( httpClient, context, root );
     }
 
-    public Traversal from( final Link link )
+    public Traversing from( final Link link )
     {
-        return new RetrievingTraversal( httpClient, context, link.toUri( ) );
+        return new HttpTraversing( httpClient, context, link.toUri( ) );
     }
 }

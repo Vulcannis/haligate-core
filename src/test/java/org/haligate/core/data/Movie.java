@@ -1,26 +1,26 @@
 package org.haligate.core.data;
 
-public class Actor
+public class Movie
 {
-    private String name;
+    private String title;
 
-    public Actor( )
+    public Movie( )
     {
     }
 
-    public Actor( final String name )
+    public Movie( final String title )
     {
-        this.name = name;
+        this.title = title;
     }
 
-    public String getName( )
+    public String getTitle( )
     {
-        return name;
+        return title;
     }
 
-    public void setName( final String name )
+    public void setTitle( final String title )
     {
-        this.name = name;
+        this.title = title;
     }
 
     @Override
@@ -28,7 +28,7 @@ public class Actor
     {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ( name == null ? 0 : name.hashCode( ) );
+        result = prime * result + ( title == null ? 0 : title.hashCode( ) );
         return result;
     }
 
@@ -44,12 +44,12 @@ public class Actor
         if( getClass( ) != obj.getClass( ) ) {
             return false;
         }
-        final Actor other = (Actor)obj;
-        if( name == null ) {
-            if( other.name != null ) {
+        final Movie other = (Movie)obj;
+        if( title == null ) {
+            if( other.title != null ) {
                 return false;
             }
-        } else if( !name.equals( other.name ) ) {
+        } else if( !title.equals( other.title ) ) {
             return false;
         }
         return true;
@@ -58,6 +58,6 @@ public class Actor
     @Override
     public String toString( )
     {
-        return "Actor [name=" + name + "]";
+        return "Movie [title=" + title + "]";
     }
 }

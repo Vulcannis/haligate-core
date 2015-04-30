@@ -4,28 +4,35 @@ import static java.util.Arrays.asList;
 import static net.jadler.Jadler.*;
 import static org.haligate.core.Haligate.jsonHalContentType;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.Map.Entry;
 
 import net.jadler.Request;
+import net.jadler.junit.rule.JadlerRule;
 import net.jadler.stubbing.*;
 
+import org.apache.http.HttpStatus;
+import org.haligate.core.data.Movie;
 import org.junit.*;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.net.HttpHeaders;
 import com.theoryinpractise.halbuilder.api.*;
 import com.theoryinpractise.halbuilder.standard.StandardRepresentationFactory;
 
 public class TestBase
 {
+    @Rule
+    public JadlerRule jadlerRule = new JadlerRule( );
+
 	protected URI rootUri;
 
 	@Before
 	public void init( )
 	{
-	    initJadler( );
-
 	    final RepresentationFactory representationFactory = new StandardRepresentationFactory( );
 
 	    rootUri = URI.create( "http://localhost:" + port( ) );
@@ -46,6 +53,7 @@ public class TestBase
 	    link( movies, "movie", theMatrix, "The Matrix" );
 	    link( movies, "movie", johnWick, "John Wick" );
 	    movies.withLink( "released", rootUri.resolve( "/movies/released" ).toASCIIString( ) + "/{year}" );
+	    movies.withLink( "create", rootUri.resolve( "/movies" ) );
 
 	    actors.withProperty( "names", asList( "Keanu Reeves", "Laurence Fishborne" ) );
 	    link( actors, "root", root );
@@ -89,13 +97,38 @@ public class TestBase
 				final ImmutableMap< String, Representation > actors = ImmutableMap.of( "Keanu Reeves", keanuReeves, "Laurence Fishborne", laurenceFishborne );
 				for( final Entry< String, Representation > entry: actors.entrySet( ) ) {
 					if( entry.getKey( ).contains( name ) ) {
-						final Representation results = representationFactory.newRepresentation( request.getURI( ) ).withNamespace( "ex", "http://example.com/rels/{rel}" );;
+						final Representation results = representationFactory.newRepresentation( request.getURI( ) ).withNamespace( "ex", "http://example.com/rels/{rel}" );
 						link( results, "actor", entry.getValue( ), entry.getKey( ) );
 						return StubResponse.builder( ).body( results.toString( jsonHalContentType ), Charsets.UTF_8 ).build( );
 					}
 				}
 				return StubResponse.builder( ).status( 404 ).build( );
 			}
+        } );
+
+        onRequest( ).
+            havingMethodEqualTo( "POST" ).
+            havingPathEqualTo( "/movies" ).
+        respondUsing( new Responder( ) {
+            private int nextId = 3;
+
+            @Override
+            public StubResponse nextResponse( final Request request )
+            {
+                try {
+                    final Movie movie = new ObjectMapper( ).readValue( request.getBodyAsString( ), Movie.class );
+                    final URI location = rootUri.resolve( "/movies/" + nextId++ );
+                    final Representation resource = representationFactory.newRepresentation( location ).withNamespace( "ex", "http://example.com/rels/{rel}" );
+                    resource.withProperty( "title", movie.getTitle( ) );
+                    link( resource, "movies", movies );
+                    mockResources( resource );
+                    return StubResponse.builder( ).header( HttpHeaders.LOCATION, location.toASCIIString( ) ).status( HttpStatus.SC_CREATED ).build( );
+                }
+                catch( final IOException e ) {
+                    e.printStackTrace();
+                    return StubResponse.builder( ).status( HttpStatus.SC_INTERNAL_SERVER_ERROR ).build( );
+                }
+            }
         } );
 	}
 
@@ -124,14 +157,9 @@ public class TestBase
 	            havingPathEqualTo( "/" + rootUri.relativize( resourceUri ).toASCIIString( ) ).
 	            havingHeaderEqualTo( "Accept", jsonHalContentType ).
 	        respond( ).
+	            withHeader( "X-Root-Resource", rootUri.toASCIIString( ) ).
 	            withContentType( jsonHalContentType ).
 	            withBody( resource.toString( jsonHalContentType ) );
 	    }
-	}
-
-	@After
-	public void dispose( )
-	{
-	    closeJadler( );
 	}
 }

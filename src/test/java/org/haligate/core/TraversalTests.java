@@ -10,10 +10,11 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 
-import org.haligate.core.data.Actor;
+import org.haligate.core.data.*;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
+import com.google.common.net.HttpHeaders;
 import com.google.common.reflect.TypeToken;
 
 public class TraversalTests extends TestBase
@@ -173,5 +174,25 @@ public class TraversalTests extends TestBase
         verifyThatRequest( ).
             havingPathEqualTo( "/movies/1" ).
             receivedNever( );
+    }
+
+    @Test
+    public void followArbitraryHeaders( ) throws IOException
+    {
+        final Client client = Haligate.defaultClient( );
+        final Link link = client.from( rootUri ).followHeader( "X-Root-Resource" ).asLink( );
+
+        assertThat( link.toUri( ), equalTo( rootUri ) );
+    }
+
+    @Test
+    public void postContent( ) throws IOException
+    {
+        final Client client = Haligate.defaultClient( );
+        final Movie movie = new Movie( "Bill and Ted's Excellent Adventure" );
+        final Resource< Movie > movieResource = client.from( rootUri ).follow( "movies", "create" ).post( movie ).followHeader( HttpHeaders.LOCATION ).asResource( Movie.class );
+
+        assertThat( movieResource.getBody( ), equalTo( movie ) );
+        assertThat( movieResource.getSelfLink( ).toUri( ), equalTo( rootUri.resolve( "/movies/3" ) ) );
     }
 }

@@ -1,5 +1,6 @@
 package org.haligate.core;
 
+import static com.google.common.collect.Multimaps.unmodifiableListMultimap;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonMap;
 
@@ -15,26 +16,29 @@ import com.google.common.collect.*;
 
 public class Resource< T >
 {
-    private final String content;
+    private final String text;
     private final T body;
     private final ListMultimap< String, Link > links = ArrayListMultimap.create( );
     private final Map< String, UriTemplate > curieTemplates = Maps.newHashMap( );
     private final Map< URI, JsonNode > embeddedResources = Maps.newHashMap( );
+    private final ListMultimap< String, String > headers;
 
-    protected Resource( final String content, final Class< T > type ) throws IOException
+    protected Resource( final String text, final Class< T > type, final ListMultimap< String, String > headers  ) throws IOException
     {
+        this.text = text;
+        this.headers = unmodifiableListMultimap( headers );
         final ObjectMapper mapper = new ObjectMapper( );
-        final JsonNode root = mapper.readTree( content );
+        final JsonNode root = mapper.readTree( text );
         readCurries( curieTemplates, mapper, root );
         body = init( mapper, root, type, curieTemplates, links, embeddedResources );
-        this.content = body == null ? content : null;
     }
 
     protected Resource( final JsonNode root, final Class< T > type, final Map< String, UriTemplate > curieTemplates ) throws IOException
     {
+        this.text = root.toString( );
+        this.headers = ImmutableListMultimap.of( );
         this.curieTemplates.putAll( curieTemplates );
         body = init( new ObjectMapper( ), root, type, curieTemplates, links, embeddedResources );
-        this.content = body == null ? root.toString( ) : null;
     }
 
     private static < T > T init( final ObjectMapper mapper, final JsonNode root, final Class< T > type, final Map< String, UriTemplate > curieTemplates, final ListMultimap< String, Link > links, final Map< URI, JsonNode > embeddedResources ) throws IOException
@@ -145,11 +149,16 @@ public class Resource< T >
         }
     }
 
+    public ListMultimap< String, String > getHeaders( )
+    {
+        return headers;
+    }
+
     @Override
     public String toString( )
     {
         if( body == null ) {
-            return content;
+            return text;
         } else {
             return body.toString( );
         }
