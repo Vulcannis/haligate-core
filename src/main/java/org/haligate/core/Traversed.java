@@ -1,7 +1,7 @@
 package org.haligate.core;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.*;
 
 import com.google.common.base.Function;
 import com.google.common.reflect.TypeToken;
@@ -25,4 +25,6 @@ public interface Traversed
     public Traversing followHeader( final String header, final Function< List< String >, String > disambiguate ) throws IOException;
 
     public Traversed with( final String name, final String value ) throws IOException;
+
+	public Traversed with( Map< String, Object > parameters ) throws IOException;
 }

@@ -143,4 +143,10 @@ public class HttpTraversing implements Traversing
     {
         return get( ).with( name, value );
     }
+
+    @Override
+    public Traversed with( final Map< String, Object > parameters ) throws IOException
+    {
+    	return get( ).with( parameters );
+    }
 }

@@ -101,6 +101,13 @@ public abstract class BasicTraversed implements Traversed
         return this;
     }
 
+    @Override
+    public Traversed with( final Map< String, Object > parameters ) throws IOException
+    {
+    	this.parameters.putAll( parameters );
+    	return this;
+    }
+
     private Link determineLink( final String rel, final Resource< ? > resource )
     {
         final Matcher matcher = followRelPattern.matcher( rel );
