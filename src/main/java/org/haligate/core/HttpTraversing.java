@@ -12,12 +12,11 @@ import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.*;
+import com.google.common.base.Supplier;
 import com.google.common.collect.*;
 import com.google.common.net.HttpHeaders;
-import com.google.common.reflect.TypeToken;
 
-public class HttpTraversing implements Traversing
+public class HttpTraversing extends BasicTraversing
 {
     protected final CloseableHttpClient httpClient;
     protected final HttpContext context;
@@ -88,65 +87,5 @@ public class HttpTraversing implements Traversing
         final Link link = new Link( );
         link.setProperty( "href", uri.toASCIIString( ) );
         return link;
-    }
-
-    @Override
-    public Traversing follow( final String... rels ) throws IOException
-    {
-        return get( ).follow( rels );
-    }
-
-    @Override
-    public Resource< ? > asResource( ) throws IOException
-    {
-        return get( ).asResource( );
-    }
-
-    @Override
-    public < T > Resource< T > asResource( final Class< T > contentType ) throws IOException
-    {
-        return get( ).asResource( contentType );
-    }
-
-    @Override
-    public < T > Resource< T > asResource( final TypeToken< T > contentType ) throws IOException
-    {
-        return get( ).asResource( contentType );
-    }
-
-    @Override
-    public < T > T asObject( final Class< T > contentType ) throws IOException
-    {
-        return get( ).asObject( contentType );
-    }
-
-    @Override
-    public < T > T asObject( final TypeToken< T > contentType ) throws IOException
-    {
-        return get( ).asObject( contentType );
-    }
-
-    @Override
-    public Traversing followHeader( final String header ) throws IOException
-    {
-        return get( ).followHeader( header );
-    }
-
-    @Override
-    public Traversing followHeader( final String header, final Function< List< String >, String > disambiguate ) throws IOException
-    {
-        return get( ).followHeader( header, disambiguate );
-    }
-
-    @Override
-    public Traversed with( final String name, final String value ) throws IOException
-    {
-        return get( ).with( name, value );
-    }
-
-    @Override
-    public Traversed with( final Map< String, Object > parameters ) throws IOException
-    {
-    	return get( ).with( parameters );
     }
 }
