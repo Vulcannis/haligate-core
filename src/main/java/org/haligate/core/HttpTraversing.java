@@ -19,10 +19,10 @@ import com.google.common.net.HttpHeaders;
 public class HttpTraversing extends BasicTraversing
 {
     protected final CloseableHttpClient httpClient;
-    protected final HttpContext context;
+    protected final Supplier< HttpContext > context;
     protected final URI uri;
 
-    HttpTraversing( final CloseableHttpClient httpClient, final HttpContext context, final URI uri )
+    HttpTraversing( final CloseableHttpClient httpClient, final Supplier< HttpContext > context, final URI uri )
     {
         this.httpClient = httpClient;
         this.context = context;
@@ -34,7 +34,7 @@ public class HttpTraversing extends BasicTraversing
     {
         final HttpGet request = new HttpGet( uri );
         request.addHeader( HttpHeaders.ACCEPT, Haligate.jsonHalContentType );
-        try ( final CloseableHttpResponse response = httpClient.execute( request, context ) ) {
+        try ( final CloseableHttpResponse response = httpClient.execute( request, context.get( ) ) ) {
             final String responseContent = EntityUtils.toString( response.getEntity( ) );
             if( response.getStatusLine( ).getStatusCode( ) / 100 != 2 ) {
                 throw new IOException( "Unexpected response for resource " + uri + ": " + response );
@@ -61,7 +61,7 @@ public class HttpTraversing extends BasicTraversing
         request.addHeader( HttpHeaders.ACCEPT, Haligate.jsonHalContentType );
         final String requestContent = new ObjectMapper( ).writeValueAsString( content );
         request.setEntity( new StringEntity( requestContent, ContentType.APPLICATION_JSON ) );
-        try ( final CloseableHttpResponse response = httpClient.execute( request, context ) ) {
+        try ( final CloseableHttpResponse response = httpClient.execute( request, context.get( ) ) ) {
             final String responseContent = EntityUtils.toString( response.getEntity( ) );
             if( response.getStatusLine( ).getStatusCode( ) / 100 != 2 ) {
                 throw new IOException( "Unexpected response for resource " + uri + ": " + response );

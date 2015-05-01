@@ -17,11 +17,11 @@ public abstract class BasicTraversed implements Traversed
     private static final Pattern followRelPattern = Pattern.compile( "([^\\[]+)(?:\\[(?:(\\d+)|(?:([^:]+):([^\\]]+)))\\])?" );
 
     protected final CloseableHttpClient httpClient;
-    protected final HttpContext context;
+    protected final Supplier< HttpContext > context;
     protected final ListMultimap< String, String > headers;
     protected final Map< String, Object > parameters = Maps.newHashMap( );
 
-    BasicTraversed( final CloseableHttpClient httpClient, final HttpContext context, final ListMultimap< String, String > headers )
+    BasicTraversed( final CloseableHttpClient httpClient, final Supplier< HttpContext > context, final ListMultimap< String, String > headers )
     {
         this.httpClient = httpClient;
         this.context = context;
