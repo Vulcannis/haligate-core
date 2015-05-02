@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 
-import org.apache.http.Header;
+import org.apache.http.*;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.*;
 import org.apache.http.entity.*;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -33,52 +34,16 @@ public class HttpTraversing extends BasicTraversing
     public Traversed get( ) throws IOException
     {
         final HttpGet request = new HttpGet( uri );
-        request.addHeader( HttpHeaders.ACCEPT, Haligate.jsonHalContentType );
-        try ( final CloseableHttpResponse response = httpClient.execute( request, context.get( ) ) ) {
-            final String responseContent = EntityUtils.toString( response.getEntity( ) );
-            if( response.getStatusLine( ).getStatusCode( ) / 100 != 2 ) {
-                throw new IOException( "Unexpected response for resource " + uri + ": " + response );
-            }
-            final Map< String, Collection< String > > map = new CaseInsensitiveForwardingMap< Collection< String > >( );
-            final ListMultimap< String, String > headers = Multimaps.newListMultimap( map, new Supplier< List< String > >( ) {
-                @Override
-                public List< String > get( )
-                {
-                    return Lists.newArrayList( );
-                }
-            } );
-            for( final Header header: response.getAllHeaders( ) ) {
-                headers.put( header.getName( ), header.getValue( ) );
-            }
-            return new HalTraversed( httpClient, context, responseContent, headers );
-        }
+        return execute( request );
     }
 
     @Override
     public Traversed post( final Object content ) throws IOException
     {
         final HttpPost request = new HttpPost( uri );
-        request.addHeader( HttpHeaders.ACCEPT, Haligate.jsonHalContentType );
         final String requestContent = new ObjectMapper( ).writeValueAsString( content );
         request.setEntity( new StringEntity( requestContent, ContentType.APPLICATION_JSON ) );
-        try ( final CloseableHttpResponse response = httpClient.execute( request, context.get( ) ) ) {
-            final String responseContent = EntityUtils.toString( response.getEntity( ) );
-            if( response.getStatusLine( ).getStatusCode( ) / 100 != 2 ) {
-                throw new IOException( "Unexpected response for resource " + uri + ": " + response );
-            }
-            final Map< String, Collection< String > > map = new CaseInsensitiveForwardingMap< Collection< String > >( );
-            final ListMultimap< String, String > headers = Multimaps.newListMultimap( map, new Supplier< List< String > >( ) {
-                @Override
-                public List< String > get( )
-                {
-                    return Lists.newArrayList( );
-                }
-            } );
-            for( final Header header: response.getAllHeaders( ) ) {
-                headers.put( header.getName( ), header.getValue( ) );
-            }
-            return new HalTraversed( httpClient, context, responseContent, headers );
-        }
+        return execute( request );
     }
 
     @Override
@@ -87,5 +52,40 @@ public class HttpTraversing extends BasicTraversing
         final Link link = new Link( );
         link.setProperty( "href", uri.toASCIIString( ) );
         return link;
+    }
+
+    private Traversed execute( final HttpUriRequest request ) throws IOException, ClientProtocolException
+    {
+        request.addHeader( HttpHeaders.ACCEPT, Haligate.jsonHalContentType );
+        try ( final CloseableHttpResponse response = httpClient.execute( request, context.get( ) ) ) {
+            if( response.getStatusLine( ).getStatusCode( ) / 100 != 2 ) {
+                throw new IOException( "Unexpected response for resource " + uri + ": " + response );
+            }
+            final ListMultimap< String, String > headers = parseHeaders( response );
+            final String responseContent = EntityUtils.toString( response.getEntity( ) );
+            return new HalTraversed( httpClient, context, responseContent, headers );
+        }
+    }
+
+    private ListMultimap< String, String > parseHeaders( final HttpResponse response )
+    {
+        final ListMultimap< String, String > headers = newCaseInsensitiveKeyedListMultimap( );
+        for( final Header header: response.getAllHeaders( ) ) {
+            headers.put( header.getName( ), header.getValue( ) );
+        }
+        return headers;
+    }
+
+    private static ListMultimap< String, String > newCaseInsensitiveKeyedListMultimap( )
+    {
+        final Map< String, Collection< String > > map = new CaseInsensitiveForwardingMap< Collection< String > >( );
+        final ListMultimap< String, String > headers = Multimaps.newListMultimap( map, new Supplier< List< String > >( ) {
+            @Override
+            public List< String > get( )
+            {
+                return Lists.newArrayList( );
+            }
+        } );
+        return headers;
     }
 }

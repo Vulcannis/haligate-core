@@ -22,9 +22,9 @@ public interface Traversed
 
     public Traversing followHeader( final String header ) throws IOException;
 
-    public Traversing followHeader( final String header, final Function< List< String >, String > disambiguate ) throws IOException;
+    public Traversing followHeader( final String header, final Function< List< String >, String > disambiguator ) throws IOException;
 
     public Traversed with( final String name, final String value ) throws IOException;
 
-	public Traversed with( Map< String, Object > parameters ) throws IOException;
+	public Traversed with( final Map< String, Object > parameters ) throws IOException;
 }

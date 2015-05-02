@@ -51,9 +51,9 @@ public abstract class BasicTraversing implements Traversing
     }
 
     @Override
-    public Traversing followHeader( final String header, final Function< List< String >, String > disambiguate ) throws IOException
+    public Traversing followHeader( final String header, final Function< List< String >, String > disambiguator ) throws IOException
     {
-        return get( ).followHeader( header, disambiguate );
+        return get( ).followHeader( header, disambiguator );
     }
 
     @Override

@@ -190,9 +190,8 @@ public class TraversalTests extends TestBase
     {
         final Client client = Haligate.defaultClient( );
         final Movie movie = new Movie( "Bill and Ted's Excellent Adventure" );
-        final Resource< Movie > movieResource = client.from( rootUri ).follow( "movies", "create" ).post( movie ).followHeader( HttpHeaders.LOCATION ).asResource( Movie.class );
+        final Link newMovie = client.from( rootUri ).follow( "movies", "create" ).post( movie ).followHeader( HttpHeaders.LOCATION ).asLink( );
 
-        assertThat( movieResource.getBody( ), equalTo( movie ) );
-        assertThat( movieResource.getSelfLink( ).toUri( ), equalTo( rootUri.resolve( "/movies/3" ) ) );
+        assertThat( newMovie.toUri( ), equalTo( rootUri.resolve( "/movies/3" ) ) );
     }
 }

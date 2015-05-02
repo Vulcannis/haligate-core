@@ -4,7 +4,6 @@ import static java.util.Arrays.asList;
 import static net.jadler.Jadler.*;
 import static org.haligate.core.Haligate.jsonHalContentType;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.Map.Entry;
 
@@ -13,10 +12,8 @@ import net.jadler.junit.rule.JadlerRule;
 import net.jadler.stubbing.*;
 
 import org.apache.http.HttpStatus;
-import org.haligate.core.data.Movie;
 import org.junit.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.net.HttpHeaders;
@@ -28,10 +25,10 @@ public class TestBase
     @Rule
     public JadlerRule jadlerRule = new JadlerRule( );
 
-	protected URI rootUri;
+    protected URI rootUri;
 
-	@Before
-	public void init( )
+    @Before
+	public void init( ) throws IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException
 	{
 	    final RepresentationFactory representationFactory = new StandardRepresentationFactory( );
 
@@ -115,51 +112,40 @@ public class TestBase
             @Override
             public StubResponse nextResponse( final Request request )
             {
-                try {
-                    final Movie movie = new ObjectMapper( ).readValue( request.getBodyAsString( ), Movie.class );
-                    final URI location = rootUri.resolve( "/movies/" + nextId++ );
-                    final Representation resource = representationFactory.newRepresentation( location ).withNamespace( "ex", "http://example.com/rels/{rel}" );
-                    resource.withProperty( "title", movie.getTitle( ) );
-                    link( resource, "movies", movies );
-                    mockResources( resource );
-                    return StubResponse.builder( ).header( HttpHeaders.LOCATION, location.toASCIIString( ) ).status( HttpStatus.SC_CREATED ).build( );
-                }
-                catch( final IOException e ) {
-                    e.printStackTrace();
-                    return StubResponse.builder( ).status( HttpStatus.SC_INTERNAL_SERVER_ERROR ).build( );
-                }
+                final URI location = rootUri.resolve( "/movies/" + nextId++ );
+                return StubResponse.builder( ).header( HttpHeaders.LOCATION, location.toASCIIString( ) ).status( HttpStatus.SC_CREATED ).build( );
             }
         } );
 	}
 
-	private void link( final Representation from, final String rel, final Representation to )
-	{
-	    link( from, rel, to, null );
-	}
+    private void link( final Representation from, final String rel, final Representation to )
+    {
+        link( from, rel, to, null );
+    }
 
-	private void link( final Representation from, final String rel, final Representation to, final String name )
-	{
-	    from.withLink( rel, to.getResourceLink( ).getHref( ), name, null, null, null );
-	    from.withLink( "ex:" + rel, to.getResourceLink( ).getHref( ), name, null, null, null );
-	}
+    private void link( final Representation from, final String rel, final Representation to, final String name )
+    {
+        from.withLink( rel, to.getResourceLink( ).getHref( ), name, null, null, null );
+        from.withLink( "ex:" + rel, to.getResourceLink( ).getHref( ), name, null, null, null );
+    }
 
     private void embed( final Representation from, final String rel, final Representation to )
     {
         from.withRepresentation( rel, to );
     }
 
-	private void mockResources( final Representation... resources )
-	{
-	    for( final Representation resource: resources ) {
-	        final URI resourceUri = URI.create( resource.getResourceLink( ).getHref( ) );
-	        onRequest( ).
-	            havingMethodEqualTo( "GET" ).
-	            havingPathEqualTo( "/" + rootUri.relativize( resourceUri ).toASCIIString( ) ).
-	            havingHeaderEqualTo( "Accept", jsonHalContentType ).
-	        respond( ).
-	            withHeader( "X-Root-Resource", rootUri.toASCIIString( ) ).
-	            withContentType( jsonHalContentType ).
-	            withBody( resource.toString( jsonHalContentType ) );
-	    }
-	}
+    private void mockResources( final Representation... resources )
+    {
+        for( final Representation resource: resources ) {
+            final URI resourceUri = URI.create( resource.getResourceLink( ).getHref( ) );
+            onRequest( ).
+                havingMethodEqualTo( "GET" ).
+                havingPathEqualTo( "/" + rootUri.relativize( resourceUri ).toASCIIString( ) ).
+                havingHeaderEqualTo( "Accept", jsonHalContentType ).
+            respond( ).
+                withHeader( "X-Root-Resource", rootUri.toASCIIString( ) ).
+                withContentType( jsonHalContentType ).
+                withBody( resource.toString( jsonHalContentType ) );
+        }
+    }
 }
