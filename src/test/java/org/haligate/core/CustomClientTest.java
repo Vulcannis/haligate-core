@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import com.google.common.base.Supplier;
 
-public class CustomClientTests extends TestBase
+public class CustomClientTest extends TestBase
 {
 	@Test
 	public void customStaticContext( ) throws IOException

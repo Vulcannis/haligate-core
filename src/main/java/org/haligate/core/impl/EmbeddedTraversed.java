@@ -1,7 +1,9 @@
-package org.haligate.core;
+package org.haligate.core.impl;
 
 import java.io.IOException;
 import java.net.URI;
+
+import org.haligate.core.Resource;
 
 import com.google.common.collect.ImmutableListMultimap;
 
@@ -10,9 +12,9 @@ public class EmbeddedTraversed extends BasicTraversed
     private final Resource< ? > parentResource;
     private final URI embeddedLink;
 
-    EmbeddedTraversed( final Client client, final Resource< ? > parentResource, final URI embeddedLink )
+    EmbeddedTraversed( final Config config, final Resource< ? > parentResource, final URI embeddedLink )
     {
-        super( client, ImmutableListMultimap.< String, String >of( ) );
+        super( config, ImmutableListMultimap.< String, String >of( ) );
         this.parentResource = parentResource;
         this.embeddedLink = embeddedLink;
     }

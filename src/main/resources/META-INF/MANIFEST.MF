@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: org.haligate.core
+Provide-Package: org.haligate.core
+Bundle-Name: Haligate HAL Client
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-Version: 0.0.1

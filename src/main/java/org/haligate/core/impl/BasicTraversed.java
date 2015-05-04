@@ -1,9 +1,11 @@
-package org.haligate.core;
+package org.haligate.core.impl;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 import java.util.regex.*;
+
+import org.haligate.core.*;
 
 import com.google.common.base.*;
 import com.google.common.collect.*;
@@ -13,13 +15,13 @@ public abstract class BasicTraversed implements Traversed
 {
     private static final Pattern followRelPattern = Pattern.compile( "([^\\[]+)(?:\\[(?:(\\d+)|(?:([^:]+):([^\\]]+)))\\])?" );
 
-    protected final Client client;
+    protected final Config config;
     protected final ListMultimap< String, String > headers;
     protected final Map< String, Object > parameters = Maps.newHashMap( );
 
-    BasicTraversed( final Client client, final ListMultimap< String, String > headers )
+    BasicTraversed( final Config config, final ListMultimap< String, String > headers )
     {
-        this.client = client;
+        this.config = config;
         this.headers = headers;
     }
 
@@ -56,9 +58,9 @@ public abstract class BasicTraversed implements Traversed
         final Traversing traversing;
         final URI nextUri = selectedLink.toUri( parameters );
         if( resource.hasEmbeddedResourceFor( nextUri ) ) {
-            traversing = new EmbeddedTraversing( client, resource, nextUri );
+            traversing = new EmbeddedTraversing( config, resource, nextUri );
         } else {
-            traversing = new HttpTraversing( client, nextUri );
+            traversing = new HttpTraversing( config, nextUri );
         }
 
         if( index < rels.length - 1 ) {
@@ -86,7 +88,7 @@ public abstract class BasicTraversed implements Traversed
     @Override
     public Traversing followHeader( final String header, final Function< List< String >, String > disambiguator )
     {
-        return new HttpTraversing( client, URI.create( disambiguator.apply( headers.get( header ) ) ) );
+        return new HttpTraversing( config, URI.create( disambiguator.apply( headers.get( header ) ) ) );
     }
 
     @Override

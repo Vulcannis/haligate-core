@@ -1,16 +1,18 @@
-package org.haligate.core;
+package org.haligate.core.impl;
 
 import java.io.IOException;
 import java.net.URI;
+
+import org.haligate.core.*;
 
 public class EmbeddedTraversing extends HttpTraversing
 {
     private final Resource< ? > parentResource;
     private final URI embeddedUri;
 
-    EmbeddedTraversing( final Client client, final Resource< ? > parentResource, final URI embeddedUri )
+    EmbeddedTraversing( final Config config, final Resource< ? > parentResource, final URI embeddedUri )
     {
-        super( client, embeddedUri );
+        super( config, embeddedUri );
         this.parentResource = parentResource;
         this.embeddedUri = embeddedUri;
     }
@@ -18,6 +20,6 @@ public class EmbeddedTraversing extends HttpTraversing
     @Override
     public Traversed get( ) throws IOException
     {
-        return new EmbeddedTraversed( client, parentResource, embeddedUri );
+        return new EmbeddedTraversed( config, parentResource, embeddedUri );
     }
 }

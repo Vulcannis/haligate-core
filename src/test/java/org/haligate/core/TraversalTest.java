@@ -17,7 +17,7 @@ import org.junit.Test;
 import com.google.common.net.HttpHeaders;
 import com.google.common.reflect.TypeToken;
 
-public class TraversalTests extends TestBase
+public class TraversalTest extends TestBase
 {
     @Test
     public void asLink( ) throws IOException

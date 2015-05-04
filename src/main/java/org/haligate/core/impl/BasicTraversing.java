@@ -1,7 +1,9 @@
-package org.haligate.core;
+package org.haligate.core.impl;
 
 import java.io.IOException;
 import java.util.*;
+
+import org.haligate.core.*;
 
 import com.google.common.base.Function;
 import com.google.common.reflect.TypeToken;
@@ -67,5 +69,4 @@ public abstract class BasicTraversing implements Traversing
     {
     	return get( ).with( parameters );
     }
-
 }
