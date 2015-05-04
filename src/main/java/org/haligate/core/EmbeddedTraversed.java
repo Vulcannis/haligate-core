@@ -3,10 +3,6 @@ package org.haligate.core;
 import java.io.IOException;
 import java.net.URI;
 
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.protocol.HttpContext;
-
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableListMultimap;
 
 public class EmbeddedTraversed extends BasicTraversed
@@ -14,9 +10,9 @@ public class EmbeddedTraversed extends BasicTraversed
     private final Resource< ? > parentResource;
     private final URI embeddedLink;
 
-    EmbeddedTraversed( final CloseableHttpClient httpClient, final Supplier< HttpContext > context, final Resource< ? > parentResource, final URI embeddedLink )
+    EmbeddedTraversed( final Client client, final Resource< ? > parentResource, final URI embeddedLink )
     {
-        super( httpClient, context, ImmutableListMultimap.< String, String >of( ) );
+        super( client, ImmutableListMultimap.< String, String >of( ) );
         this.parentResource = parentResource;
         this.embeddedLink = embeddedLink;
     }

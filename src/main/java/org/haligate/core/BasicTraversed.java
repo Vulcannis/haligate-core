@@ -5,9 +5,6 @@ import java.net.URI;
 import java.util.*;
 import java.util.regex.*;
 
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.protocol.HttpContext;
-
 import com.google.common.base.*;
 import com.google.common.collect.*;
 import com.google.common.reflect.TypeToken;
@@ -16,15 +13,13 @@ public abstract class BasicTraversed implements Traversed
 {
     private static final Pattern followRelPattern = Pattern.compile( "([^\\[]+)(?:\\[(?:(\\d+)|(?:([^:]+):([^\\]]+)))\\])?" );
 
-    protected final CloseableHttpClient httpClient;
-    protected final Supplier< HttpContext > context;
+    protected final Client client;
     protected final ListMultimap< String, String > headers;
     protected final Map< String, Object > parameters = Maps.newHashMap( );
 
-    BasicTraversed( final CloseableHttpClient httpClient, final Supplier< HttpContext > context, final ListMultimap< String, String > headers )
+    BasicTraversed( final Client client, final ListMultimap< String, String > headers )
     {
-        this.httpClient = httpClient;
-        this.context = context;
+        this.client = client;
         this.headers = headers;
     }
 
@@ -61,9 +56,9 @@ public abstract class BasicTraversed implements Traversed
         final Traversing traversing;
         final URI nextUri = selectedLink.toUri( parameters );
         if( resource.hasEmbeddedResourceFor( nextUri ) ) {
-            traversing = new EmbeddedTraversing( httpClient, context, resource, nextUri );
+            traversing = new EmbeddedTraversing( client, resource, nextUri );
         } else {
-            traversing = new HttpTraversing( httpClient, context, nextUri );
+            traversing = new HttpTraversing( client, nextUri );
         }
 
         if( index < rels.length - 1 ) {
@@ -91,7 +86,7 @@ public abstract class BasicTraversed implements Traversed
     @Override
     public Traversing followHeader( final String header, final Function< List< String >, String > disambiguator )
     {
-        return new HttpTraversing( httpClient, context, URI.create( disambiguator.apply( headers.get( header ) ) ) );
+        return new HttpTraversing( client, URI.create( disambiguator.apply( headers.get( header ) ) ) );
     }
 
     @Override

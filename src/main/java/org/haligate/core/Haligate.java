@@ -4,6 +4,7 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.*;
 import org.apache.http.protocol.HttpContext;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.*;
 
 public class Haligate
@@ -22,7 +23,20 @@ public class Haligate
 
 	public static class ClientBuilder
 	{
-		private Supplier< HttpContext > contextSupplier = Suppliers.ofInstance( (HttpContext)HttpClientContext.create( ) );
+	    private Supplier< CloseableHttpClient > httpClient = Suppliers.ofInstance( HttpClients.createDefault( ) );
+		private Supplier< HttpContext > context = Suppliers.ofInstance( (HttpContext)HttpClientContext.create( ) );
+		private Supplier< ObjectMapper > mapper = Suppliers.ofInstance( new ObjectMapper( ) );
+
+		public ClientBuilder usingClient( final CloseableHttpClient httpClient )
+		{
+		    return usingClient( Suppliers.ofInstance( httpClient ) );
+		}
+
+		public ClientBuilder usingClient( final Supplier< CloseableHttpClient > httpClient )
+		{
+		    this.httpClient = httpClient;
+		    return this;
+		}
 
 		public ClientBuilder usingContext( final HttpContext context )
 		{
@@ -31,14 +45,24 @@ public class Haligate
 
 		public ClientBuilder usingContext( final Supplier< HttpContext > contextSupplier )
         {
-		    this.contextSupplier = contextSupplier;
+		    this.context = contextSupplier;
+            return this;
+        }
+
+		public ClientBuilder usingMapper( final ObjectMapper mapper )
+		{
+		    return usingMapper( Suppliers.ofInstance( mapper ) );
+		}
+
+        public ClientBuilder usingMapper( final Supplier< ObjectMapper > mapper )
+        {
+            this.mapper = mapper;
             return this;
         }
 
         public Client createClient( )
 		{
-			final CloseableHttpClient httpClient = HttpClients.createDefault( );
-			return new Client( httpClient, contextSupplier );
+			return new Client( httpClient, context, mapper );
 		}
 	}
 }

@@ -16,6 +16,7 @@ import com.google.common.collect.*;
 
 public class Resource< T >
 {
+    private final Client client;
     private final String text;
     private final T body;
     private final ListMultimap< String, Link > links = ArrayListMultimap.create( );
@@ -23,22 +24,25 @@ public class Resource< T >
     private final Map< URI, JsonNode > embeddedResources = Maps.newHashMap( );
     private final ListMultimap< String, String > headers;
 
-    protected Resource( final String text, final Class< T > type, final ListMultimap< String, String > headers  ) throws IOException
+    protected Resource( final Client client, final String text, final Class< T > type, final ListMultimap< String, String > headers  ) throws IOException
     {
+        this.client = client;
         this.text = text;
         this.headers = unmodifiableListMultimap( headers );
-        final ObjectMapper mapper = new ObjectMapper( );
+        final ObjectMapper mapper = client.mapper.get( ).copy( );
         final JsonNode root = mapper.readTree( text );
         readCurries( curieTemplates, mapper, root );
         body = init( mapper, root, type, curieTemplates, links, embeddedResources );
     }
 
-    protected Resource( final JsonNode root, final Class< T > type, final Map< String, UriTemplate > curieTemplates ) throws IOException
+    protected Resource( final Client client, final JsonNode root, final Class< T > type, final Map< String, UriTemplate > curieTemplates ) throws IOException
     {
+        this.client = client;
         this.text = root.toString( );
         this.headers = ImmutableListMultimap.of( );
         this.curieTemplates.putAll( curieTemplates );
-        body = init( new ObjectMapper( ), root, type, curieTemplates, links, embeddedResources );
+        final ObjectMapper mapper = client.mapper.get( ).copy( );
+        body = init( mapper, root, type, curieTemplates, links, embeddedResources );
     }
 
     private static < T > T init( final ObjectMapper mapper, final JsonNode root, final Class< T > type, final Map< String, UriTemplate > curieTemplates, final ListMultimap< String, Link > links, final Map< URI, JsonNode > embeddedResources ) throws IOException
@@ -145,7 +149,7 @@ public class Resource< T >
         if( resourceNode == null ) {
             return null;
         } else {
-            return new Resource< S >( resourceNode, type, curieTemplates );
+            return new Resource< S >( client, resourceNode, type, curieTemplates );
         }
     }
 
