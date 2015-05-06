@@ -193,5 +193,37 @@ public class TraversalTest extends TestBase
         final Link newMovie = client.from( rootUri ).follow( "movies", "create" ).post( movie ).followHeader( HttpHeaders.LOCATION ).asLink( );
 
         assertThat( newMovie.toUri( ), equalTo( rootUri.resolve( "/movies/3" ) ) );
+
+        verifyThatRequest( ).
+            havingMethodEqualTo( "POST" ).
+            havingBody( containsString( "Excellent" ) ).
+            receivedOnce( );
+    }
+
+    @Test
+    public void putContent( ) throws IOException
+    {
+        final Client client = Haligate.defaultClient( );
+        final Movie movie = new Movie( "Bill and Ted's Excellent Adventure" );
+        client.from( rootUri.resolve( "/movies/1" ) ).put( movie );
+
+        verifyThatRequest( ).
+            havingPathEqualTo( "/movies/1" ).
+            havingMethodEqualTo( "PUT" ).
+            havingBody( containsString( "Excellent" ) ).
+            receivedOnce( );
+    }
+
+    @Test
+    public void delete( ) throws IOException
+    {
+        final Client client = Haligate.defaultClient( );
+        client.from( rootUri.resolve( "/movies/1" ) ).delete( );
+
+        verifyThatRequest( ).
+            havingPathEqualTo( "/movies/1" ).
+            havingMethodEqualTo( "DELETE" ).
+            havingBody( equalTo( "" ) ).
+            receivedOnce( );
     }
 }

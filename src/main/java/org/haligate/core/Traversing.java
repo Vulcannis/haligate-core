@@ -8,5 +8,9 @@ public interface Traversing extends Traversed
 
     public Traversed post( final Object content ) throws IOException;
 
+    public Traversed put( final Object content ) throws IOException;
+
+    public Traversed delete( ) throws IOException;
+
     public Link asLink( );
 }

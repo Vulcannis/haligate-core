@@ -42,6 +42,22 @@ public class HttpTraversing extends BasicTraversing
     }
 
     @Override
+    public Traversed put( final Object content ) throws IOException
+    {
+        final HttpPut request = new HttpPut( uri );
+        final String requestContent = config.mapper.get( ).writeValueAsString( content );
+        request.setEntity( new StringEntity( requestContent, ContentType.APPLICATION_JSON ) );
+        return execute( request );
+    }
+
+    @Override
+    public Traversed delete( ) throws IOException
+    {
+        final HttpDelete request = new HttpDelete( uri );
+        return execute( request );
+    }
+
+    @Override
     public Link asLink( )
     {
         final Link link = new Link( );
@@ -51,13 +67,14 @@ public class HttpTraversing extends BasicTraversing
 
     private Traversed execute( final HttpUriRequest request ) throws IOException, ClientProtocolException
     {
-        request.addHeader( HttpHeaders.ACCEPT, Haligate.jsonHalContentType );
+        request.addHeader( HttpHeaders.ACCEPT, Haligate.jsonHalContentType.getMimeType( ) );
         try ( final CloseableHttpResponse response = config.httpClient.get( ).execute( request, config.context.get( ) ) ) {
             if( response.getStatusLine( ).getStatusCode( ) / 100 != 2 ) {
                 throw new IOException( "Unexpected response for resource " + uri + ": " + response );
             }
             final ListMultimap< String, String > headers = parseHeaders( response );
-            final String responseContent = EntityUtils.toString( response.getEntity( ) );
+            final HttpEntity entity = response.getEntity( );
+            final String responseContent = entity == null ? null : EntityUtils.toString( entity );
             return new HalTraversed( config, responseContent, headers );
         }
     }

@@ -2,7 +2,7 @@ package org.haligate.core;
 
 import static java.util.Arrays.asList;
 import static net.jadler.Jadler.*;
-import static org.haligate.core.Haligate.jsonHalContentType;
+import static org.haligate.core.Haligate.*;
 
 import java.net.URI;
 import java.util.Map.Entry;
@@ -85,7 +85,7 @@ public class TestBase
             havingMethodEqualTo( "GET" ).
             havingPathEqualTo( "/movies" ).
             havingParameter( "name" ).
-            havingHeaderEqualTo( "Accept", jsonHalContentType ).
+            havingHeaderEqualTo( HttpHeaders.ACCEPT, jsonHalContentType.getMimeType( ) ).
         respondUsing( new Responder( ) {
 			@Override
 			public StubResponse nextResponse( final Request request )
@@ -96,7 +96,7 @@ public class TestBase
 					if( entry.getKey( ).contains( name ) ) {
 						final Representation results = representationFactory.newRepresentation( request.getURI( ) ).withNamespace( "ex", "http://example.com/rels/{rel}" );
 						link( results, "actor", entry.getValue( ), entry.getKey( ) );
-						return StubResponse.builder( ).body( results.toString( jsonHalContentType ), Charsets.UTF_8 ).build( );
+						return StubResponse.builder( ).body( results.toString( jsonHalContentType.getMimeType( ) ), Charsets.UTF_8 ).build( );
 					}
 				}
 				return StubResponse.builder( ).status( 404 ).build( );
@@ -106,6 +106,7 @@ public class TestBase
         onRequest( ).
             havingMethodEqualTo( "POST" ).
             havingPathEqualTo( "/movies" ).
+            havingHeaderEqualTo( HttpHeaders.CONTENT_TYPE, jsonContentType.toString( ) ).
         respondUsing( new Responder( ) {
             private int nextId = 3;
 
@@ -141,11 +142,24 @@ public class TestBase
             onRequest( ).
                 havingMethodEqualTo( "GET" ).
                 havingPathEqualTo( "/" + rootUri.relativize( resourceUri ).toASCIIString( ) ).
-                havingHeaderEqualTo( "Accept", jsonHalContentType ).
+                havingHeaderEqualTo( HttpHeaders.ACCEPT, jsonHalContentType.getMimeType( ) ).
             respond( ).
                 withHeader( "X-Root-Resource", rootUri.toASCIIString( ) ).
-                withContentType( jsonHalContentType ).
-                withBody( resource.toString( jsonHalContentType ) );
+                withContentType( jsonHalContentType.toString( ) ).
+                withBody( resource.toString( jsonHalContentType.getMimeType( ) ) );
+            onRequest( ).
+                havingMethodEqualTo( "PUT" ).
+                havingPathEqualTo( "/" + rootUri.relativize( resourceUri ).toASCIIString( ) ).
+                havingHeaderEqualTo( HttpHeaders.CONTENT_TYPE, jsonContentType.toString( ) ).
+            respond( ).
+                withHeader( "X-Root-Resource", rootUri.toASCIIString( ) ).
+                withStatus( HttpStatus.SC_NO_CONTENT );
+            onRequest( ).
+                havingMethodEqualTo( "DELETE" ).
+                havingPathEqualTo( "/" + rootUri.relativize( resourceUri ).toASCIIString( ) ).
+            respond( ).
+                withHeader( "X-Root-Resource", rootUri.toASCIIString( ) ).
+                withStatus( HttpStatus.SC_NO_CONTENT );
         }
     }
 }

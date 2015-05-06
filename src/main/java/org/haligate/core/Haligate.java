@@ -1,6 +1,7 @@
 package org.haligate.core;
 
 import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.*;
 import org.apache.http.protocol.HttpContext;
 
@@ -9,7 +10,8 @@ import com.google.common.base.*;
 
 public class Haligate
 {
-    public static final String jsonHalContentType = "application/hal+json";
+    public static final ContentType jsonHalContentType = ContentType.create( "application/hal+json", Charsets.UTF_8 );
+    public static final ContentType jsonContentType = ContentType.APPLICATION_JSON;
 
     public static Client defaultClient( )
     {
