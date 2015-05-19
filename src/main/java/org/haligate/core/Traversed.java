@@ -27,4 +27,6 @@ public interface Traversed
     public Traversed with( final String name, final String value ) throws IOException;
 
 	public Traversed with( final Map< String, Object > parameters ) throws IOException;
+
+	public Traversed withHeader( String name, String value ) throws IOException;
 }

@@ -2,6 +2,8 @@ package org.haligate.core.impl;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.http.*;
 import org.apache.http.client.ClientProtocolException;
@@ -18,11 +20,13 @@ public class HttpTraversing extends BasicTraversing
 {
     protected final Config config;
     protected final URI uri;
+    protected final Map< String, String > requestHeaders;
 
-    public HttpTraversing( final Config config, final URI uri  )
+    public HttpTraversing( final Config config, final URI uri, final Map< String, String > requestHeaders )
     {
         this.config = config;
         this.uri = uri;
+		this.requestHeaders = requestHeaders;
     }
 
     @Override
@@ -68,6 +72,9 @@ public class HttpTraversing extends BasicTraversing
     private Traversed execute( final HttpUriRequest request ) throws IOException, ClientProtocolException
     {
         request.addHeader( HttpHeaders.ACCEPT, Haligate.jsonHalContentType.getMimeType( ) );
+        for( final Entry< String, String > entry: requestHeaders.entrySet( ) ) {
+			request.addHeader( entry.getKey( ), entry.getValue( ) );
+		}
         try ( final CloseableHttpResponse response = config.httpClient.get( ).execute( request, config.context.get( ) ) ) {
             if( response.getStatusLine( ).getStatusCode( ) / 100 != 2 ) {
                 throw new IOException( "Unexpected response for resource " + uri + ": " + response );

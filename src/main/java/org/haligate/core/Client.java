@@ -1,6 +1,7 @@
 package org.haligate.core;
 
 import java.net.URI;
+import java.util.Collections;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.protocol.HttpContext;
@@ -18,11 +19,11 @@ public class Client extends Config
 
     public Traversing from( final URI root )
     {
-        return new HttpTraversing( this, root );
+        return new HttpTraversing( this, root, Collections.< String, String >emptyMap( ) );
     }
 
     public Traversing from( final Link link )
     {
-        return new HttpTraversing( this, link.toUri( ) );
+        return new HttpTraversing( this, link.toUri( ), Collections.< String, String >emptyMap( ) );
     }
 }

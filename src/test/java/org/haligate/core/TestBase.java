@@ -7,10 +7,6 @@ import static org.haligate.core.Haligate.*;
 import java.net.URI;
 import java.util.Map.Entry;
 
-import net.jadler.Request;
-import net.jadler.junit.rule.JadlerRule;
-import net.jadler.stubbing.*;
-
 import org.apache.http.HttpStatus;
 import org.junit.*;
 
@@ -20,6 +16,10 @@ import com.google.common.net.HttpHeaders;
 import com.theoryinpractise.halbuilder.api.*;
 import com.theoryinpractise.halbuilder.standard.StandardRepresentationFactory;
 
+import net.jadler.Request;
+import net.jadler.junit.rule.JadlerRule;
+import net.jadler.stubbing.*;
+
 public class TestBase
 {
     @Rule
@@ -28,7 +28,7 @@ public class TestBase
     protected URI rootUri;
 
     @Before
-	public void init( ) throws IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException
+	public void init( ) throws IllegalArgumentException, SecurityException
 	{
 	    final RepresentationFactory representationFactory = new StandardRepresentationFactory( );
 

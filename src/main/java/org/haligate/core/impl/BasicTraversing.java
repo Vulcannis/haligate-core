@@ -69,4 +69,10 @@ public abstract class BasicTraversing implements Traversing
     {
     	return get( ).with( parameters );
     }
+
+    @Override
+    public Traversed withHeader( final String name, final String value ) throws IOException
+    {
+    	return get( ).withHeader( name, value );
+    }
 }

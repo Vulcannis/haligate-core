@@ -20,7 +20,7 @@ import com.google.common.reflect.TypeToken;
 public class TraversalTest extends TestBase
 {
     @Test
-    public void asLink( ) throws IOException
+    public void asLink( )
     {
         final Client client = Haligate.defaultClient( );
         final Link root = client.from( rootUri ).asLink( );
@@ -224,6 +224,18 @@ public class TraversalTest extends TestBase
             havingPathEqualTo( "/movies/1" ).
             havingMethodEqualTo( "DELETE" ).
             havingBody( equalTo( "" ) ).
+            receivedOnce( );
+    }
+
+    @Test
+    public void setHeader( ) throws IOException
+    {
+        final Client client = Haligate.defaultClient( );
+        client.from( rootUri ).withHeader( "gah", "hah" ).follow( "movies" ).get( );
+
+        verifyThatRequest( ).
+            havingPathEqualTo( "/movies" ).
+            havingHeaderEqualTo( "gah", "hah" ).
             receivedOnce( );
     }
 }
