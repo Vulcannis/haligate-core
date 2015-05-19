@@ -18,7 +18,6 @@ public abstract class BasicTraversed implements Traversed
     protected final Config config;
     protected final ListMultimap< String, String > headers;
     protected final Map< String, Object > parameters = Maps.newHashMap( );
-	protected Map< String, String > newHeaders = Maps.newHashMap( );
 
     BasicTraversed( final Config config, final ListMultimap< String, String > headers )
     {
@@ -61,7 +60,7 @@ public abstract class BasicTraversed implements Traversed
         if( resource.hasEmbeddedResourceFor( nextUri ) ) {
             traversing = new EmbeddedTraversing( config, resource, nextUri );
         } else {
-            traversing = new HttpTraversing( config, nextUri, newHeaders );
+            traversing = new HttpTraversing( config, nextUri );
         }
 
         if( index < rels.length - 1 ) {
@@ -89,7 +88,7 @@ public abstract class BasicTraversed implements Traversed
     @Override
     public Traversing followHeader( final String header, final Function< List< String >, String > disambiguator )
     {
-        return new HttpTraversing( config, URI.create( disambiguator.apply( headers.get( header ) ) ), newHeaders );
+        return new HttpTraversing( config, URI.create( disambiguator.apply( headers.get( header ) ) ) );
     }
 
     @Override
@@ -103,13 +102,6 @@ public abstract class BasicTraversed implements Traversed
     public Traversed with( final Map< String, Object > parameters ) throws IOException
     {
     	this.parameters.putAll( parameters );
-    	return this;
-    }
-
-    @Override
-    public Traversed withHeader( final String name, final String value ) throws IOException
-    {
-    	newHeaders.put( name, value );
     	return this;
     }
 

@@ -2,7 +2,6 @@ package org.haligate.core.impl;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Collections;
 
 import org.haligate.core.*;
 
@@ -13,7 +12,7 @@ public class EmbeddedTraversing extends HttpTraversing
 
     EmbeddedTraversing( final Config config, final Resource< ? > parentResource, final URI embeddedUri )
     {
-        super( config, embeddedUri, Collections.< String, String >emptyMap( ) );
+        super( config, embeddedUri );
         this.parentResource = parentResource;
         this.embeddedUri = embeddedUri;
     }

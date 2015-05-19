@@ -231,10 +231,10 @@ public class TraversalTest extends TestBase
     public void setHeader( ) throws IOException
     {
         final Client client = Haligate.defaultClient( );
-        client.from( rootUri ).withHeader( "gah", "hah" ).follow( "movies" ).get( );
+        client.from( rootUri ).withHeader( "gah", "hah" ).follow( "movies" );
 
         verifyThatRequest( ).
-            havingPathEqualTo( "/movies" ).
+            havingPathEqualTo( "/" ).
             havingHeaderEqualTo( "gah", "hah" ).
             receivedOnce( );
     }

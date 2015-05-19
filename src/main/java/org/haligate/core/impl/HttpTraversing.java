@@ -2,7 +2,6 @@ package org.haligate.core.impl;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.http.*;
@@ -20,13 +19,11 @@ public class HttpTraversing extends BasicTraversing
 {
     protected final Config config;
     protected final URI uri;
-    protected final Map< String, String > requestHeaders;
 
-    public HttpTraversing( final Config config, final URI uri, final Map< String, String > requestHeaders )
+    public HttpTraversing( final Config config, final URI uri )
     {
         this.config = config;
         this.uri = uri;
-		this.requestHeaders = requestHeaders;
     }
 
     @Override

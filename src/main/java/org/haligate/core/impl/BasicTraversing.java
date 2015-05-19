@@ -6,11 +6,14 @@ import java.util.*;
 import org.haligate.core.*;
 
 import com.google.common.base.Function;
+import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
 
 public abstract class BasicTraversing implements Traversing
 {
-    @Override
+	protected Map< String, String > requestHeaders = Maps.newHashMap( );
+
+	@Override
     public Traversing follow( final String... rels ) throws IOException
     {
         return get( ).follow( rels );
@@ -71,8 +74,9 @@ public abstract class BasicTraversing implements Traversing
     }
 
     @Override
-    public Traversed withHeader( final String name, final String value ) throws IOException
+    public Traversing withHeader( final String name, final String value ) throws IOException
     {
-    	return get( ).withHeader( name, value );
+    	requestHeaders.put( name, value );
+    	return this;
     }
 }

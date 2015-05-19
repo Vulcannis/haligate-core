@@ -13,4 +13,6 @@ public interface Traversing extends Traversed
     public Traversed delete( ) throws IOException;
 
     public Link asLink( );
+
+	public Traversing withHeader( String name, String value ) throws IOException;
 }
