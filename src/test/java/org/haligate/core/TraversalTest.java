@@ -10,10 +10,12 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 
+import org.apache.http.entity.*;
 import org.haligate.core.data.*;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.net.HttpHeaders;
 import com.google.common.reflect.TypeToken;
 
@@ -236,6 +238,23 @@ public class TraversalTest extends TestBase
         verifyThatRequest( ).
             havingPathEqualTo( "/" ).
             havingHeaderEqualTo( "gah", "hah" ).
+            receivedOnce( );
+    }
+
+    @Test
+    public void entityContent( ) throws IOException
+    {
+        final Client client = Haligate.defaultClient( );
+        final Movie movie = new Movie( "Bill and Ted's Excellent Adventure" );
+        final String content = new ObjectMapper( ).writeValueAsString( movie );
+        final StringEntity entity = new StringEntity( content, ContentType.APPLICATION_JSON );
+        final Link newMovie = client.from( rootUri ).follow( "movies", "create" ).post( entity ).followHeader( HttpHeaders.LOCATION ).asLink( );
+
+        assertThat( newMovie.toUri( ), equalTo( rootUri.resolve( "/movies/3" ) ) );
+
+        verifyThatRequest( ).
+            havingMethodEqualTo( "POST" ).
+            havingBody( equalTo( content ) ).
             receivedOnce( );
     }
 }

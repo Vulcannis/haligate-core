@@ -12,6 +12,7 @@ import org.apache.http.util.EntityUtils;
 import org.haligate.core.*;
 import org.haligate.core.support.CaseInsensitiveForwardingMap;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ListMultimap;
 import com.google.common.net.HttpHeaders;
 
@@ -37,17 +38,25 @@ public class HttpTraversing extends BasicTraversing
     public Traversed post( final Object content ) throws IOException
     {
         final HttpPost request = new HttpPost( uri );
-        final String requestContent = config.mapper.get( ).writeValueAsString( content );
-        request.setEntity( new StringEntity( requestContent, ContentType.APPLICATION_JSON ) );
+        prepareRequestContent( request, content );
         return execute( request );
+    }
+
+    private void prepareRequestContent( final HttpEntityEnclosingRequest request, final Object content ) throws JsonProcessingException
+    {
+        if( content instanceof HttpEntity ) {
+            request.setEntity( (HttpEntity)content );
+        } else {
+            final String requestContent = config.mapper.get( ).writeValueAsString( content );
+            request.setEntity( new StringEntity( requestContent, ContentType.APPLICATION_JSON ) );
+        }
     }
 
     @Override
     public Traversed put( final Object content ) throws IOException
     {
         final HttpPut request = new HttpPut( uri );
-        final String requestContent = config.mapper.get( ).writeValueAsString( content );
-        request.setEntity( new StringEntity( requestContent, ContentType.APPLICATION_JSON ) );
+        prepareRequestContent( request, content );
         return execute( request );
     }
 
@@ -70,8 +79,8 @@ public class HttpTraversing extends BasicTraversing
     {
         request.addHeader( HttpHeaders.ACCEPT, Haligate.jsonHalContentType.getMimeType( ) );
         for( final Entry< String, String > entry: requestHeaders.entrySet( ) ) {
-			request.addHeader( entry.getKey( ), entry.getValue( ) );
-		}
+            request.addHeader( entry.getKey( ), entry.getValue( ) );
+        }
         try ( final CloseableHttpResponse response = config.httpClient.get( ).execute( request, config.context.get( ) ) ) {
             if( response.getStatusLine( ).getStatusCode( ) / 100 != 2 ) {
                 throw new IOException( "Unexpected response for resource " + uri + ": " + response );
