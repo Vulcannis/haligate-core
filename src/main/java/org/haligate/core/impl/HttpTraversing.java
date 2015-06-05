@@ -2,6 +2,7 @@ package org.haligate.core.impl;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.*;
 import java.util.Map.Entry;
 
 import org.apache.http.*;
@@ -20,11 +21,13 @@ public class HttpTraversing extends BasicTraversing
 {
     protected final Config config;
     protected final URI uri;
+    protected final Map< String, Object > parameters;
 
-    public HttpTraversing( final Config config, final URI uri )
+    public HttpTraversing( final Config config, final URI uri, final Map< String, Object > parameters )
     {
         this.config = config;
         this.uri = uri;
+        this.parameters = parameters;
     }
 
     @Override
@@ -44,7 +47,10 @@ public class HttpTraversing extends BasicTraversing
 
     private void prepareRequestContent( final HttpEntityEnclosingRequest request, final Object content ) throws JsonProcessingException
     {
-        if( content instanceof HttpEntity ) {
+        if( content instanceof TemplatedContent ) {
+            final Object producedContent = ( (TemplatedContent< ? >)content ).getContent( parameters );
+            prepareRequestContent( request, producedContent );
+        } else if( content instanceof HttpEntity ) {
             request.setEntity( (HttpEntity)content );
         } else {
             final String requestContent = config.mapper.get( ).writeValueAsString( content );

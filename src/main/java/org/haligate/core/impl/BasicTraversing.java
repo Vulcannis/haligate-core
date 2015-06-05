@@ -62,7 +62,7 @@ public abstract class BasicTraversing implements Traversing
     }
 
     @Override
-    public Traversed with( final String name, final String value ) throws IOException
+    public Traversed with( final String name, final Object value ) throws IOException
     {
         return get( ).with( name, value );
     }

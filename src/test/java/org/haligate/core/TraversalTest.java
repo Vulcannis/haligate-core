@@ -257,4 +257,23 @@ public class TraversalTest extends TestBase
             havingBody( equalTo( content ) ).
             receivedOnce( );
     }
+
+    @Test
+    public void templatedContent( ) throws IOException
+    {
+        final Client client = Haligate.defaultClient( );
+        final Object content = new TemplatedContent< Object >( ) {
+            @Override
+            public Object getContent( final Map< String, Object > parameters )
+            {
+                return parameters.get( "data" );
+            }
+        };
+        client.from( rootUri ).with( "data", "value" ).follow( "movies" ).post( content );
+
+        verifyThatRequest( ).
+            havingMethodEqualTo( "POST" ).
+            havingBody( containsString( "value" ) ).
+            receivedOnce( );
+    }
 }
