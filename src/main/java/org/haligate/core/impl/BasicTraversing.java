@@ -1,6 +1,7 @@
 package org.haligate.core.impl;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.*;
 
 import org.haligate.core.*;
@@ -56,7 +57,7 @@ public abstract class BasicTraversing implements Traversing
     }
 
     @Override
-    public Traversing followHeader( final String header, final Function< List< String >, String > disambiguator ) throws IOException
+    public Traversing followHeader( final String header, final Function< List< String >, URI > disambiguator ) throws IOException
     {
         return get( ).followHeader( header, disambiguator );
     }

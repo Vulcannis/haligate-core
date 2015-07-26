@@ -14,25 +14,36 @@ public class Link
     private final Map< String, String > properties = Maps.newHashMap( );
     private boolean templated;
 
+    public Link( )
+    {
+    }
+
+    public Link( final URI href )
+    {
+        properties.put( "href", href.toString( ) );
+    }
+
     public URI toUri( )
     {
-    	if( templated ) {
-    		throw new IllegalStateException( "Cannot get URI of a template link without providing parameters. Explicitly pass an empty parameter map to ignore optional parameters. (" + getHref( ) + ")" );
-    	} else {
-    		return URI.create( getHref( ) );
-    	}
+        if( templated ) {
+            throw new IllegalStateException(
+                "Cannot get URI of a template link without providing parameters. Explicitly pass an empty parameter map to ignore optional parameters. ("
+                    + getHref( ) + ")" );
+        } else {
+            return URI.create( getHref( ) );
+        }
     }
 
     public URI toUri( final Map< String, Object > parameters )
     {
-    	final String expanded = UriTemplate.expand( getHref( ), parameters );
-		return URI.create( expanded );
+        final String expanded = UriTemplate.expand( getHref( ), parameters );
+        return URI.create( expanded );
     }
 
-	public String getHref( )
-	{
-		return properties.get( "href" );
-	}
+    public String getHref( )
+    {
+        return properties.get( "href" );
+    }
 
     @JsonProperty
     public void setTemplated( final boolean value )

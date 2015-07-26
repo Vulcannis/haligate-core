@@ -56,11 +56,10 @@ public abstract class BasicTraversed implements Traversed
         final Link selectedLink = determineLink( rels[ index ], resource );
 
         final Traversing traversing;
-        final URI nextUri = selectedLink.toUri( parameters );
-        if( resource.hasEmbeddedResourceFor( nextUri ) ) {
-            traversing = new EmbeddedTraversing( config, resource, nextUri );
+        if( resource.hasEmbeddedResourceFor( selectedLink ) ) {
+            traversing = new EmbeddedTraversing( config, resource, selectedLink );
         } else {
-            traversing = new HttpTraversing( config, nextUri, parameters );
+            traversing = new HttpTraversing( config, selectedLink, parameters );
         }
 
         if( index < rels.length - 1 ) {
@@ -73,22 +72,22 @@ public abstract class BasicTraversed implements Traversed
     @Override
     public Traversing followHeader( final String header )
     {
-        return followHeader( header, new Function< List< String >, String >( ) {
+        return followHeader( header, new Function< List< String >, URI >( ) {
             @Override
-            public String apply( final List< String > input )
+            public URI apply( final List< String > input )
             {
                 if( input.size( ) != 1 ) {
                     throw new IllegalStateException( "Cannot follow header '" + header + "', need exactly one value but was: " + input );
                 }
-                return input.get( 0 );
+                return URI.create( input.get( 0 ) );
             }
         } );
     }
 
     @Override
-    public Traversing followHeader( final String header, final Function< List< String >, String > disambiguator )
+    public Traversing followHeader( final String header, final Function< List< String >, URI > disambiguator )
     {
-        return new HttpTraversing( config, URI.create( disambiguator.apply( headers.get( header ) ) ), parameters );
+        return new HttpTraversing( config, new Link( disambiguator.apply( headers.get( header ) ) ), parameters );
     }
 
     @Override

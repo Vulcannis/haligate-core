@@ -2,7 +2,9 @@ package org.haligate.core;
 
 import java.util.Map;
 
+import com.google.common.base.Optional;
+
 public interface TemplatedContent< S >
 {
-    public Object getContent( final Map< String, Object > parameters );
+    public Optional< S > getContent( final Map< String, Object > parameters );
 }

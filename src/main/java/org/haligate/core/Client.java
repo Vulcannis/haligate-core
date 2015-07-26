@@ -19,11 +19,11 @@ public class Client extends Config
 
     public Traversing from( final URI root )
     {
-        return new HttpTraversing( this, root, Collections.< String, Object >emptyMap( ) );
+        return new HttpTraversing( this, new Link( root ), Collections.< String, Object >emptyMap( ) );
     }
 
     public Traversing from( final Link link )
     {
-        return new HttpTraversing( this, link.toUri( ), Collections.< String, Object >emptyMap( ) );
+        return new HttpTraversing( this, link, Collections.< String, Object >emptyMap( ) );
     }
 }

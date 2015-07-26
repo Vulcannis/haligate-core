@@ -5,7 +5,6 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonMap;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -23,7 +22,7 @@ public class HalResource< T > implements Resource< T >
     private final T body;
     private final ListMultimap< String, Link > links = ArrayListMultimap.create( );
     private final Map< String, UriTemplate > curieTemplates = Maps.newHashMap( );
-    private final Map< URI, JsonNode > embeddedResources = Maps.newHashMap( );
+    private final Map< Link, JsonNode > embeddedResources = Maps.newHashMap( );
     private final ListMultimap< String, String > headers;
 
     protected HalResource( final Config config, final String text, final Class< T > type, final ListMultimap< String, String > headers  ) throws IOException
@@ -47,7 +46,7 @@ public class HalResource< T > implements Resource< T >
         body = init( mapper, root, type, curieTemplates, links, embeddedResources );
     }
 
-    private static < T > T init( final ObjectMapper mapper, final JsonNode root, final Class< T > type, final Map< String, UriTemplate > curieTemplates, final ListMultimap< String, Link > links, final Map< URI, JsonNode > embeddedResources ) throws IOException
+    private static < T > T init( final ObjectMapper mapper, final JsonNode root, final Class< T > type, final Map< String, UriTemplate > curieTemplates, final ListMultimap< String, Link > links, final Map< Link, JsonNode > embeddedResources ) throws IOException
     {
         readLinks( mapper, root, curieTemplates, links );
         readEmbeds( mapper, root, curieTemplates, links, embeddedResources );
@@ -89,7 +88,7 @@ public class HalResource< T > implements Resource< T >
         }
     }
 
-    private static void readEmbeds( final ObjectMapper mapper, final JsonNode root, final Map< String, UriTemplate > curieTemplates, final ListMultimap< String, Link > embeds, final Map< URI, JsonNode > embeddedResources ) throws IOException
+    private static void readEmbeds( final ObjectMapper mapper, final JsonNode root, final Map< String, UriTemplate > curieTemplates, final ListMultimap< String, Link > embeds, final Map< Link, JsonNode > embeddedResources ) throws IOException
     {
         for( final Iterator< Map.Entry< String, JsonNode > > it = root.path( "_embedded" ).fields( ); it.hasNext( ); ) {
             final Entry< String, JsonNode > entry = it.next( );
@@ -104,7 +103,7 @@ public class HalResource< T > implements Resource< T >
                 final JsonNode selfLink = resource.path( "_links" ).path( "self" );
                 final Link link = mapper.treeToValue( selfLink, Link.class );
                 embeds.put( rel, link );
-                embeddedResources.put( link.toUri( ), resource );
+                embeddedResources.put( link, resource );
             }
         }
     }
@@ -139,21 +138,21 @@ public class HalResource< T > implements Resource< T >
     }
 
     @Override
-    public boolean hasEmbeddedResourceFor( final URI uri )
+    public boolean hasEmbeddedResourceFor( final Link link )
     {
-        return embeddedResources.containsKey( uri );
+        return embeddedResources.containsKey( link );
     }
 
     @Override
-    public Resource< ? > getEmbeddedResourceFor( final URI uri ) throws IOException
+    public Resource< ? > getEmbeddedResourceFor( final Link link ) throws IOException
     {
-        return getEmbeddedResourceFor( uri, Void.class );
+        return getEmbeddedResourceFor( link, Void.class );
     }
 
     @Override
-    public < S > Resource< S > getEmbeddedResourceFor( final URI uri, final Class< S > type ) throws IOException
+    public < S > Resource< S > getEmbeddedResourceFor( final Link link, final Class< S > type ) throws IOException
     {
-        final JsonNode resourceNode = embeddedResources.get( uri );
+        final JsonNode resourceNode = embeddedResources.get( link );
         if( resourceNode == null ) {
             return null;
         } else {

@@ -1,6 +1,7 @@
 package org.haligate.core;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.*;
 
 import com.google.common.base.Function;
@@ -22,7 +23,7 @@ public interface Traversed
 
     public Traversing followHeader( final String header ) throws IOException;
 
-    public Traversing followHeader( final String header, final Function< List< String >, String > disambiguator ) throws IOException;
+    public Traversing followHeader( final String header, final Function< List< String >, URI > disambiguator ) throws IOException;
 
     public Traversed with( final String name, final Object value ) throws IOException;
 

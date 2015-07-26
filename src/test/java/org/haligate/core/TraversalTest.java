@@ -16,6 +16,7 @@ import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Optional;
 import com.google.common.net.HttpHeaders;
 import com.google.common.reflect.TypeToken;
 
@@ -160,9 +161,9 @@ public class TraversalTest extends TestBase
         final Resource< ? > released = client.from( rootUri ).follow( "movies" ).with( "year", "1999" ).follow( "released" ).asResource( );
 
         assertThat( released.getLinks( ), hasKey( "movie" ) );
-        final URI movieUri = released.getLinks( ).get( "movie" ).get( 0 ).toUri( );
-        assertThat( released.hasEmbeddedResourceFor( movieUri ), equalTo( true ) );
-        final Resource< ? > movie = released.getEmbeddedResourceFor( movieUri );
+        final Link movieLink = released.getLinks( ).get( "movie" ).get( 0 );
+        assertThat( released.hasEmbeddedResourceFor( movieLink ), equalTo( true ) );
+        final Resource< ? > movie = released.getEmbeddedResourceFor( movieLink );
         assertThat( movie.getSelfLink( ).toUri( ), equalTo( rootUri.resolve( "/movies/1" ) ) );
     }
 
@@ -264,9 +265,9 @@ public class TraversalTest extends TestBase
         final Client client = Haligate.defaultClient( );
         final Object content = new TemplatedContent< Object >( ) {
             @Override
-            public Object getContent( final Map< String, Object > parameters )
+            public Optional< Object > getContent( final Map< String, Object > parameters )
             {
-                return parameters.get( "data" );
+                return Optional.of( parameters.get( "data" ) );
             }
         };
         client.from( rootUri ).with( "data", "value" ).follow( "movies" ).post( content );
@@ -274,6 +275,27 @@ public class TraversalTest extends TestBase
         verifyThatRequest( ).
             havingMethodEqualTo( "POST" ).
             havingBody( containsString( "value" ) ).
+            receivedOnce( );
+    }
+
+    @Test
+    public void parameterModifyingContent( ) throws IOException
+    {
+        final Client client = Haligate.defaultClient( );
+        final Object content = new TemplatedContent< Object >( ) {
+            @Override
+            public Optional< Object > getContent( final Map< String, Object > parameters )
+            {
+                parameters.remove( "name" );
+                return Optional.absent( );
+            }
+        };
+        client.from( rootUri ).with( "name", "Keanu" ).follow( "movies" ).post( content );
+
+        verifyThatRequest( ).
+            havingMethodEqualTo( "POST" ).
+            havingQueryString( nullValue( ) ).
+            havingBodyEqualTo( "" ).
             receivedOnce( );
     }
 }
