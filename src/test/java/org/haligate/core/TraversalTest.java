@@ -1,5 +1,6 @@
 package org.haligate.core;
 
+import static java.util.Collections.singletonList;
 import static net.jadler.Jadler.verifyThatRequest;
 import static org.haligate.core.OurMatchers.hasKey;
 import static org.hamcrest.CoreMatchers.*;
@@ -10,13 +11,15 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.*;
+import org.apache.http.message.BasicNameValuePair;
 import org.haligate.core.data.*;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Optional;
+import com.google.common.base.*;
 import com.google.common.net.HttpHeaders;
 import com.google.common.reflect.TypeToken;
 
@@ -296,6 +299,21 @@ public class TraversalTest extends TestBase
             havingMethodEqualTo( "POST" ).
             havingQueryString( nullValue( ) ).
             havingBodyEqualTo( "" ).
+            receivedOnce( );
+    }
+
+    @Test
+    public void formEncodedPost( ) throws IOException
+    {
+        final Client client = Haligate.defaultClient( );
+        final Object content = new FormEncodedEntity( );
+        client.from( rootUri ).with( "name", "Keanu" ).follow( "movies" ).post( content );
+
+        final String expectedBody = URLEncodedUtils.format( singletonList( new BasicNameValuePair( "name", "Keanu" ) ), Charsets.ISO_8859_1 );
+        verifyThatRequest( ).
+            havingMethodEqualTo( "POST" ).
+            havingQueryString( nullValue( ) ).
+            havingBodyEqualTo( expectedBody ).
             receivedOnce( );
     }
 }

@@ -5,13 +5,15 @@ import static net.jadler.Jadler.*;
 import static org.haligate.core.Haligate.*;
 
 import java.net.URI;
+import java.util.*;
 import java.util.Map.Entry;
 
-import org.apache.http.HttpStatus;
+import org.apache.http.*;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.junit.*;
 
 import com.google.common.base.Charsets;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.*;
 import com.google.common.net.HttpHeaders;
 import com.theoryinpractise.halbuilder.api.*;
 import com.theoryinpractise.halbuilder.standard.StandardRepresentationFactory;
@@ -106,6 +108,28 @@ public class TestBase
         onRequest( ).
             havingMethodEqualTo( "POST" ).
             havingPathEqualTo( "/movies" ).
+            havingHeaderEqualTo( HttpHeaders.CONTENT_TYPE, URLEncodedUtils.CONTENT_TYPE ).
+        respondUsing( new Responder( ) {
+            @Override
+            public StubResponse nextResponse( final Request request )
+            {
+                final Map< String, String > parameters = parseForm( request );
+                final String name = parameters.get( "name" );
+                final ImmutableMap< String, Representation > actors = ImmutableMap.of( "Keanu Reeves", keanuReeves, "Laurence Fishborne", laurenceFishborne );
+                for( final Entry< String, Representation > entry: actors.entrySet( ) ) {
+                    if( entry.getKey( ).contains( name ) ) {
+                        final Representation results = representationFactory.newRepresentation( request.getURI( ) ).withNamespace( "ex", "http://example.com/rels/{rel}" );
+                        link( results, "actor", entry.getValue( ), entry.getKey( ) );
+                        return StubResponse.builder( ).body( results.toString( jsonHalContentType.getMimeType( ) ), Charsets.UTF_8 ).build( );
+                    }
+                }
+                return StubResponse.builder( ).status( 404 ).build( );
+            }
+        } );
+
+        onRequest( ).
+            havingMethodEqualTo( "POST" ).
+            havingPathEqualTo( "/movies" ).
             havingHeaderEqualTo( HttpHeaders.CONTENT_TYPE, jsonContentType.toString( ) ).
         respondUsing( new Responder( ) {
             private int nextId = 3;
@@ -118,6 +142,16 @@ public class TestBase
             }
         } );
 	}
+
+    protected Map< String, String > parseForm( final Request request )
+    {
+        final List< NameValuePair > parameters = URLEncodedUtils.parse( request.getBodyAsString( ), request.getEncoding( ) );
+        final Map< String, String > map = Maps.newHashMap( );
+        for( final NameValuePair pair: parameters ) {
+            map.put( pair.getName( ), pair.getValue( ) );
+        }
+        return map;
+    }
 
     private void link( final Representation from, final String rel, final Representation to )
     {
