@@ -19,7 +19,7 @@ public class Client extends Config
 
     public Traversing from( final URI root )
     {
-        return new HttpTraversing( this, new Link( root ), Collections.< String, Object >emptyMap( ) );
+        return new HttpTraversing( this, Link.forUri( root ), Collections.< String, Object >emptyMap( ) );
     }
 
     public Traversing from( final Link link )

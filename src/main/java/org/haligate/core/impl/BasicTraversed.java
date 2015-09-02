@@ -87,7 +87,7 @@ public abstract class BasicTraversed implements Traversed
     @Override
     public Traversing followHeader( final String header, final Function< List< String >, URI > disambiguator )
     {
-        return new HttpTraversing( config, new Link( disambiguator.apply( headers.get( header ) ) ), parameters );
+        return new HttpTraversing( config, Link.forUri( disambiguator.apply( headers.get( header ) ) ), parameters );
     }
 
     @Override

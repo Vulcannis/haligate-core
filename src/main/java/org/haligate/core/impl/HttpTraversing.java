@@ -89,7 +89,7 @@ public class HttpTraversing extends BasicTraversing
     @Override
     public Link asLink( )
     {
-        return new Link( link.toUri( parameters ) );
+        return Link.forUri( link.toUri( parameters ) );
     }
 
     private Traversed execute( final HttpUriRequest request ) throws IOException, ClientProtocolException

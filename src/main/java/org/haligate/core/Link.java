@@ -14,13 +14,18 @@ public class Link
     private final Map< String, String > properties = Maps.newHashMap( );
     private boolean templated;
 
+    public static Link forUri( final URI href )
+    {
+        return new Link( href.toString( ) );
+    }
+
     public Link( )
     {
     }
 
-    public Link( final URI href )
+    public Link( final String href )
     {
-        properties.put( "href", href.toString( ) );
+        properties.put( "href", href );
     }
 
     public URI toUri( )
