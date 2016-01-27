@@ -16,6 +16,7 @@ import org.apache.http.entity.*;
 import org.apache.http.message.BasicNameValuePair;
 import org.haligate.core.data.*;
 import org.hamcrest.Matchers;
+import org.hamcrest.collection.IsMapContaining;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -315,5 +316,16 @@ public class TraversalTest extends TestBase
             havingQueryString( nullValue( ) ).
             havingBodyEqualTo( expectedBody ).
             receivedOnce( );
+    }
+
+    @Test
+    public void contentEncodingWorks( ) throws IOException
+    {
+        final Client client = Haligate.defaultClient( );
+        @SuppressWarnings( "serial" )
+		final Map< String, String > content = client.from( rootUri ).follow( "movies", "movie[name:The Matrix]" ).asObject( new TypeToken< Map< String, String > >( ) { } );
+
+        assertThat( content, IsMapContaining.hasKey( "aka" ) );
+        assertThat( content.get( "aka" ), equalTo( "Матрица" ) );
     }
 }

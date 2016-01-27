@@ -2,7 +2,8 @@ package org.haligate.core.impl;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Map;
+import java.nio.charset.Charset;
+import java.util.*;
 import java.util.Map.Entry;
 
 import org.apache.http.*;
@@ -14,12 +15,15 @@ import org.haligate.core.*;
 import org.haligate.core.support.CaseInsensitiveForwardingMap;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.base.Optional;
-import com.google.common.collect.ListMultimap;
+import com.google.common.base.*;
+import com.google.common.collect.*;
 import com.google.common.net.HttpHeaders;
+import com.ibm.icu.text.*;
 
 public class HttpTraversing extends BasicTraversing
 {
+	private static final Set< Charset > jsonCharsets = ImmutableSet.of( Charsets.UTF_8, Charsets.UTF_16, Charsets.UTF_16BE, Charsets.UTF_16LE, Charset.forName( "UTF-32" ), Charset.forName( "UTF-32BE" ), Charset.forName( "UTF-32LE" ) );
+
     protected final Config config;
     protected final Link link;
     protected final Map< String, Object > parameters;
@@ -104,10 +108,40 @@ public class HttpTraversing extends BasicTraversing
             }
             final ListMultimap< String, String > headers = parseHeaders( response );
             final HttpEntity entity = response.getEntity( );
-            final String responseContent = entity == null ? null : EntityUtils.toString( entity );
+            final String responseContent;
+            if( entity == null ) {
+            	responseContent = null;
+            } else {
+            	responseContent = loadEntity( entity );
+            }
             return new HalTraversed( config, responseContent, headers );
         }
     }
+
+	private String loadEntity( final HttpEntity entity ) throws IOException
+	{
+		final String responseContent;
+		final byte[ ] responseContentRaw = EntityUtils.toByteArray( entity );
+		Charset charset = null;
+		final ContentType contentType = ContentType.get( entity );
+		if( contentType != null ) {
+			charset = contentType.getCharset( );
+		}
+		if( charset == null ) {
+			final CharsetDetector detector = new CharsetDetector( );
+			detector.setText( responseContentRaw );
+			final CharsetMatch detected = detector.detect( );
+			charset = Charset.forName( detected.getName( ) );
+			if( !jsonCharsets.contains( charset ) ) {
+				charset = null;
+			}
+		}
+		if( charset == null ) {
+			charset = Charsets.UTF_8;
+		}
+		responseContent = new String( responseContentRaw, charset );
+		return responseContent;
+	}
 
     private ListMultimap< String, String > parseHeaders( final HttpResponse response )
     {

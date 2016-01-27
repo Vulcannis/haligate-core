@@ -4,6 +4,7 @@ import static java.util.Arrays.asList;
 import static net.jadler.Jadler.*;
 import static org.haligate.core.Haligate.*;
 
+import java.io.*;
 import java.net.URI;
 import java.util.*;
 import java.util.Map.Entry;
@@ -61,6 +62,7 @@ public class TestBase
 	    actors.withLink( "search", rootUri.resolve( "/movies" ).toASCIIString( ) + "{?name}" );
 
 	    theMatrix.withProperty( "title", "The Matrix" );
+	    theMatrix.withProperty( "aka", "Матрица" );
 	    link( theMatrix, "movies", movies );
 	    link( theMatrix, "cast", keanuReeves, "Keanu Reeves" );
 	    link( theMatrix, "cast", laurenceFishborne, "Laurence Fishborne" );
@@ -98,7 +100,7 @@ public class TestBase
 					if( entry.getKey( ).contains( name ) ) {
 						final Representation results = representationFactory.newRepresentation( request.getURI( ) ).withNamespace( "ex", "http://example.com/rels/{rel}" );
 						link( results, "actor", entry.getValue( ), entry.getKey( ) );
-						return StubResponse.builder( ).body( results.toString( jsonHalContentType.getMimeType( ) ), Charsets.UTF_8 ).build( );
+						return StubResponse.builder( ).body( TestBase.toString( results ), Charsets.UTF_8 ).build( );
 					}
 				}
 				return StubResponse.builder( ).status( 404 ).build( );
@@ -120,7 +122,7 @@ public class TestBase
                     if( entry.getKey( ).contains( name ) ) {
                         final Representation results = representationFactory.newRepresentation( request.getURI( ) ).withNamespace( "ex", "http://example.com/rels/{rel}" );
                         link( results, "actor", entry.getValue( ), entry.getKey( ) );
-                        return StubResponse.builder( ).body( results.toString( jsonHalContentType.getMimeType( ) ), Charsets.UTF_8 ).build( );
+                        return StubResponse.builder( ).body( TestBase.toString( results ), Charsets.UTF_8 ).build( );
                     }
                 }
                 return StubResponse.builder( ).status( 404 ).build( );
@@ -180,7 +182,7 @@ public class TestBase
             respond( ).
                 withHeader( "X-Root-Resource", rootUri.toASCIIString( ) ).
                 withContentType( jsonHalContentType.toString( ) ).
-                withBody( resource.toString( jsonHalContentType.getMimeType( ) ) );
+                withBody( toString( resource ) );
             onRequest( ).
                 havingMethodEqualTo( "PUT" ).
                 havingPathEqualTo( "/" + rootUri.relativize( resourceUri ).toASCIIString( ) ).
@@ -196,4 +198,12 @@ public class TestBase
                 withStatus( HttpStatus.SC_NO_CONTENT );
         }
     }
+
+	private static String toString( final Representation resource )
+	{
+		// BaseRepresentation.toString( String ) doesn't handle encoding properly...
+		final Writer writer = new StringWriter( );
+		resource.toString( jsonHalContentType.getMimeType( ), writer );
+		return writer.toString( );
+	}
 }

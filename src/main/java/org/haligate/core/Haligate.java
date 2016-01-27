@@ -10,7 +10,7 @@ import com.google.common.base.*;
 
 public class Haligate
 {
-    public static final ContentType jsonHalContentType = ContentType.create( "application/hal+json", Charsets.UTF_8 );
+    public static final ContentType jsonHalContentType = ContentType.create( "application/hal+json" );
     public static final ContentType jsonContentType = ContentType.APPLICATION_JSON;
 
     public static Client defaultClient( )
@@ -47,7 +47,7 @@ public class Haligate
 
 		public ClientBuilder usingContext( final Supplier< HttpContext > contextSupplier )
         {
-		    this.context = contextSupplier;
+		    context = contextSupplier;
             return this;
         }
 
