@@ -77,7 +77,7 @@ public abstract class BasicTraversed implements Traversed
             public URI apply( final List< String > input )
             {
                 if( input.size( ) != 1 ) {
-                    throw new IllegalStateException( "Cannot follow header '" + header + "', need exactly one value but was: " + input );
+                    throw new LinkResolutionException( "Cannot follow header '" + header + "', need exactly one value but was: " + input );
                 }
                 return URI.create( input.get( 0 ) );
             }
@@ -108,19 +108,19 @@ public abstract class BasicTraversed implements Traversed
     {
         final Matcher matcher = followRelPattern.matcher( rel );
         if( !matcher.matches( ) ) {
-            throw new IllegalArgumentException( "Cannot follow relation '" + rel + "'" );
+            throw new LinkResolutionException( "Cannot follow relation '" + rel + "'" );
         }
         final String relName = matcher.group( 1 ), secondaryIndex = matcher.group( 2 ), secondaryKeyAttribute = matcher.group( 3 ), secondaryKeyValue = matcher
             .group( 4 );
         final List< Link > locations = resource.getLinks( ).get( relName );
         final Link selectedLink;
         if( locations.size( ) == 0 ) {
-            throw new IllegalStateException( "Cannot follow, no links of relation '" + relName + "' found in resource " + resource );
+            throw new LinkResolutionException( "Cannot follow, no links of relation '" + relName + "' found in resource " + resource );
         } else if( locations.size( ) > 1 ) {
             if( secondaryIndex != null ) {
                 final int index = Integer.parseInt( secondaryIndex );
                 if( index < 0 || index >= locations.size( ) ) {
-                    throw new IllegalStateException( "Cannot follow, index " + secondaryIndex + " given but only " + locations.size( )
+                    throw new LinkResolutionException( "Cannot follow, index " + secondaryIndex + " given but only " + locations.size( )
                         + " links available in resource " + resource );
                 }
                 selectedLink = locations.get( index );
@@ -128,26 +128,26 @@ public abstract class BasicTraversed implements Traversed
                 final List< Link > matchingLinks = FluentIterable.from( locations )
                     .filter( new SecondaryKeyPredicate( secondaryKeyAttribute, secondaryKeyValue ) ).toList( );
                 if( matchingLinks.isEmpty( ) ) {
-                    throw new IllegalStateException( "Cannot follow, secondary key [" + secondaryKeyAttribute + ":" + secondaryKeyValue
+                    throw new LinkResolutionException( "Cannot follow, secondary key [" + secondaryKeyAttribute + ":" + secondaryKeyValue
                         + "] does not apply to any links in resource " + resource );
                 } else if( matchingLinks.size( ) > 1 ) {
-                    throw new IllegalStateException( "Cannot follow, secondary key [" + secondaryKeyAttribute + ":" + secondaryKeyValue + "] matches multiple("
+                    throw new LinkResolutionException( "Cannot follow, secondary key [" + secondaryKeyAttribute + ":" + secondaryKeyValue + "] matches multiple("
                         + matchingLinks.size( ) + ") links in resource " + resource );
                 } else {
                     selectedLink = matchingLinks.get( 0 );
                 }
             } else {
-                throw new IllegalStateException( "Cannot follow, multiple links of relation '" + relName + "' found in resource " + resource
+                throw new LinkResolutionException( "Cannot follow, multiple links of relation '" + relName + "' found in resource " + resource
                     + " but no secondary key given" );
             }
         } else {
             selectedLink = locations.get( 0 );
             if( secondaryIndex != null && Integer.parseInt( secondaryIndex ) != 0 ) {
-                throw new IllegalStateException( "Cannot follow, index " + secondaryIndex + " given but only " + locations.size( )
+                throw new LinkResolutionException( "Cannot follow, index " + secondaryIndex + " given but only " + locations.size( )
                     + " links available in resource " + resource );
             } else if( secondaryKeyAttribute != null || secondaryKeyValue != null ) {
                 if( !new SecondaryKeyPredicate( secondaryKeyAttribute, secondaryKeyValue ).apply( selectedLink ) ) {
-                    throw new IllegalStateException( "Cannot follow, secondary key [" + secondaryKeyAttribute + ":" + secondaryKeyValue
+                    throw new LinkResolutionException( "Cannot follow, secondary key [" + secondaryKeyAttribute + ":" + secondaryKeyValue
                         + "] does not apply to any links in resource " + resource );
                 }
             }

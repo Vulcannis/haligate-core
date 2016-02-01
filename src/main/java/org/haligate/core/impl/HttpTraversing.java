@@ -7,7 +7,7 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import org.apache.http.*;
-import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.*;
 import org.apache.http.client.methods.*;
 import org.apache.http.entity.*;
 import org.apache.http.util.EntityUtils;
@@ -103,8 +103,9 @@ public class HttpTraversing extends BasicTraversing
             request.addHeader( entry.getKey( ), entry.getValue( ) );
         }
         try ( final CloseableHttpResponse response = config.httpClient.get( ).execute( request, config.context.get( ) ) ) {
-            if( response.getStatusLine( ).getStatusCode( ) / 100 != 2 ) {
-                throw new IOException( "Unexpected response for resource " + request.getURI( ) + ": " + response );
+            final StatusLine statusLine = response.getStatusLine( );
+            if( statusLine.getStatusCode( ) / 100 != 2 ) {
+                throw new HttpResponseException( statusLine.getStatusCode( ), statusLine.getReasonPhrase( ) );
             }
             final ListMultimap< String, String > headers = parseHeaders( response );
             final HttpEntity entity = response.getEntity( );
