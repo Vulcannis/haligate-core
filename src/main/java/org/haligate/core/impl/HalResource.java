@@ -14,6 +14,7 @@ import com.damnhandy.uri.template.UriTemplate;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.*;
 import com.google.common.collect.*;
+import com.google.common.reflect.TypeToken;
 
 public class HalResource< T > implements Resource< T >
 {
@@ -158,6 +159,13 @@ public class HalResource< T > implements Resource< T >
         } else {
             return new HalResource< S >( config, resourceNode, type, curieTemplates );
         }
+    }
+
+    @SuppressWarnings( "unchecked" )
+	@Override
+    public < S > Resource< S > getEmbeddedResourceFor( final Link link, final TypeToken< S > type ) throws IOException
+    {
+    	return (Resource< S >)getEmbeddedResourceFor( link, type.getRawType( ) );
     }
 
     @Override

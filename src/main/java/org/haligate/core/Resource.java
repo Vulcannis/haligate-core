@@ -3,6 +3,7 @@ package org.haligate.core;
 import java.io.IOException;
 
 import com.google.common.collect.ListMultimap;
+import com.google.common.reflect.TypeToken;
 
 public interface Resource< T >
 {
@@ -17,6 +18,8 @@ public interface Resource< T >
     public Resource< ? > getEmbeddedResourceFor( final Link link ) throws IOException;
 
     public < S > Resource< S > getEmbeddedResourceFor( final Link link, final Class< S > type ) throws IOException;
+
+    public < S > Resource< S > getEmbeddedResourceFor( final Link link, final TypeToken< S > type ) throws IOException;
 
     public ListMultimap< String, String > getHeaders( );
 }
