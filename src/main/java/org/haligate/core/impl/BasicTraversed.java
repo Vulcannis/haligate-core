@@ -63,7 +63,7 @@ public abstract class BasicTraversed implements Traversed
         }
 
         if( index < rels.length - 1 ) {
-            return ( (HalTraversed)traversing.get( ) ).follow( rels, index + 1 );
+            return ( (BasicTraversed)traversing.get( ) ).follow( rels, index + 1 );
         } else {
             return traversing;
         }
