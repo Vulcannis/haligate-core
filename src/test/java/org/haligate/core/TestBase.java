@@ -168,6 +168,7 @@ public class TestBase
 
     private void embed( final Representation from, final String rel, final Representation to )
     {
+    	from.withLink( rel, to.getResourceLink( ).getHref( ) );
         from.withRepresentation( rel, to );
     }
 

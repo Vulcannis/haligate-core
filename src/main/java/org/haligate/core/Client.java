@@ -12,9 +12,9 @@ import com.google.common.base.Supplier;
 
 public class Client extends Config
 {
-    public Client( final Supplier< CloseableHttpClient > httpClient, final Supplier< HttpContext > context, final Supplier< ObjectMapper > mapper )
+    public Client( final Supplier< CloseableHttpClient > httpClient, final Supplier< HttpContext > context, final Supplier< ObjectMapper > mapper, final boolean includeEmbeddedLinks )
     {
-        super( httpClient, context, mapper );
+        super( httpClient, context, mapper, includeEmbeddedLinks );
     }
 
     public Traversing from( final URI root )

@@ -11,11 +11,13 @@ public class Config
     protected final Supplier< CloseableHttpClient > httpClient;
     protected final Supplier< HttpContext > context;
     protected final Supplier< ObjectMapper > mapper;
+	protected final boolean includeEmbeddedLinks;
 
-    public Config( final Supplier< CloseableHttpClient > httpClient, final Supplier< HttpContext > context, final Supplier< ObjectMapper > mapper )
+    public Config( final Supplier< CloseableHttpClient > httpClient, final Supplier< HttpContext > context, final Supplier< ObjectMapper > mapper, final boolean includeEmbeddedLinks )
     {
         this.httpClient = httpClient;
         this.context = context;
         this.mapper = mapper;
+		this.includeEmbeddedLinks = includeEmbeddedLinks;
     }
 }

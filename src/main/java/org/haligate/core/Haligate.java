@@ -28,6 +28,7 @@ public class Haligate
 	    private Supplier< CloseableHttpClient > httpClient = Suppliers.ofInstance( HttpClients.createDefault( ) );
 		private Supplier< HttpContext > context = Suppliers.ofInstance( (HttpContext)HttpClientContext.create( ) );
 		private Supplier< ObjectMapper > mapper = Suppliers.ofInstance( new ObjectMapper( ) );
+		private boolean includeEmbeddedLinks = false;
 
 		public ClientBuilder usingClient( final CloseableHttpClient httpClient )
 		{
@@ -62,9 +63,15 @@ public class Haligate
             return this;
         }
 
+        public ClientBuilder includeEmbeddedLinks( final boolean value )
+        {
+        	includeEmbeddedLinks = value;
+        	return this;
+        }
+
         public Client createClient( )
 		{
-			return new Client( httpClient, context, mapper );
+			return new Client( httpClient, context, mapper, includeEmbeddedLinks );
 		}
 	}
 }
