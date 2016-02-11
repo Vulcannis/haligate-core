@@ -4,7 +4,7 @@
 
 	<groupId>org.haligate</groupId>
 	<artifactId>haligate-core</artifactId>
-	<version>3.0.0</version>
+	<version>3.0.1-SNAPSHOT</version>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -140,7 +140,7 @@
 								<requireSemanticVersioningConformance
 									implementation="org.semver.enforcer.RequireSemanticVersioningConformance">
 									<dumpDetails>true</dumpDetails>
-									<previousVersion>2.2</previousVersion>
+									<previousVersion>3.0</previousVersion>
 								</requireSemanticVersioningConformance>
 							</rules>
 						</configuration>
