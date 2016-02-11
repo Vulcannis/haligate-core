@@ -133,7 +133,7 @@ public class TraversalTest extends TestBase
     public void linkPathTemplates( ) throws IOException
     {
         final Client client = Haligate.defaultClient( );
-        final Link released = client.from( rootUri ).follow( "movies" ).with( "year", "1999" ).follow( "released" ).asLink( );
+        final Link released = client.from( rootUri ).follow( "movies", "released" ).with( "year", "1999" ).asLink( );
 
         assertThat( released.toUri( ), equalTo( rootUri.resolve( "/movies/released/1999" ) ) );
     }
@@ -142,7 +142,7 @@ public class TraversalTest extends TestBase
     public void linkParameterTemplates( ) throws IOException
     {
         final Client client = Haligate.defaultClient( );
-        final Resource< ? > results = client.from( rootUri ).follow( "actors" ).with( "name", "Keanu" ).follow( "search" ).asResource( );
+        final Resource< ? > results = client.from( rootUri ).follow( "actors", "search" ).with( "name", "Keanu" ).asResource( );
 
         assertThat( results.getLinks( ), hasKey( "actor" ) );
         assertThat( results.getLinks( ).get( "actor" ), hasSize( 1 ) );
@@ -162,7 +162,7 @@ public class TraversalTest extends TestBase
     public void embeddedResources( ) throws IOException
     {
         final Client client = Haligate.defaultClient( );
-        final Resource< ? > released = client.from( rootUri ).follow( "movies" ).with( "year", "1999" ).follow( "released" ).asResource( );
+        final Resource< ? > released = client.from( rootUri ).follow( "movies", "released" ).with( "year", "1999" ).asResource( );
 
         assertThat( released.getLinks( ), hasKey( "movie" ) );
         final Link movieLink = released.getLinks( ).get( "movie" ).get( 0 );
@@ -175,7 +175,7 @@ public class TraversalTest extends TestBase
     public void embeddedResourcesAreReturnedIfPossible( ) throws IOException
     {
         final Client client = Haligate.defaultClient( );
-        final Resource< ? > movie = client.from( rootUri ).follow( "movies" ).with( "year", "1999" ).follow( "released", "movie[0]" ).asResource( );
+        final Resource< ? > movie = client.from( rootUri ).follow( "movies", "released" ).with( "year", "1999" ).follow( "movie[0]" ).asResource( );
 
         assertThat( movie.getSelfLink( ).toUri( ), equalTo( rootUri.resolve( "/movies/1" ) ) );
         verifyThatRequest( ).
@@ -274,7 +274,7 @@ public class TraversalTest extends TestBase
                 return Optional.of( parameters.get( "data" ) );
             }
         };
-        client.from( rootUri ).with( "data", "value" ).follow( "movies" ).post( content );
+        client.from( rootUri ).follow( "movies" ).with( "data", "value" ).post( content );
 
         verifyThatRequest( ).
             havingMethodEqualTo( "POST" ).
@@ -308,7 +308,7 @@ public class TraversalTest extends TestBase
     {
         final Client client = Haligate.defaultClient( );
         final Object content = new FormEncodedEntity( );
-        client.from( rootUri ).with( "name", "Keanu" ).follow( "movies" ).post( content );
+        client.from( rootUri ).follow( "movies" ).with( "name", "Keanu" ).post( content );
 
         final String expectedBody = URLEncodedUtils.format( singletonList( new BasicNameValuePair( "name", "Keanu" ) ), Charsets.ISO_8859_1 );
         verifyThatRequest( ).

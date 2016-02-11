@@ -12,6 +12,9 @@ import org.apache.http.message.BasicNameValuePair;
 import com.google.common.base.*;
 import com.google.common.collect.*;
 
+/**
+ * A URL enocoded form entity with fields consisting of template values.
+ */
 public class FormEncodedEntity implements TemplatedContent< UrlEncodedFormEntity >
 {
     private final Charset charset;

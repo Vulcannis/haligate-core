@@ -3,8 +3,8 @@ package org.haligate.core.impl;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
-import java.util.*;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.http.*;
 import org.apache.http.client.*;
@@ -25,20 +25,17 @@ public class HttpTraversing extends BasicTraversing
 	private static final Set< Charset > jsonCharsets = ImmutableSet.of( Charsets.UTF_8, Charsets.UTF_16, Charsets.UTF_16BE, Charsets.UTF_16LE, Charset.forName( "UTF-32" ), Charset.forName( "UTF-32BE" ), Charset.forName( "UTF-32LE" ) );
 
     protected final Config config;
-    protected final Link link;
-    protected final Map< String, Object > parameters;
 
-    public HttpTraversing( final Config config, final Link link, final Map< String, Object > parameters )
+    public HttpTraversing( final Config config, final Link selectedLink )
     {
+    	super( selectedLink );
         this.config = config;
-        this.link = link;
-        this.parameters = parameters;
     }
 
     @Override
     public Traversed get( ) throws IOException
     {
-        final URI uri = link.toUri( parameters );
+        final URI uri = selectedLink.toUri( parameters );
         final HttpGet request = new HttpGet( uri );
         return execute( request );
     }
@@ -48,7 +45,7 @@ public class HttpTraversing extends BasicTraversing
     {
         final HttpPost request = new HttpPost( );
         prepareRequestContent( request, content );
-        final URI uri = link.toUri( parameters );
+        final URI uri = selectedLink.toUri( parameters );
         request.setURI( uri );
         return execute( request );
     }
@@ -77,7 +74,7 @@ public class HttpTraversing extends BasicTraversing
     {
         final HttpPut request = new HttpPut( );
         prepareRequestContent( request, content );
-        final URI uri = link.toUri( parameters );
+        final URI uri = selectedLink.toUri( parameters );
         request.setURI( uri );
         return execute( request );
     }
@@ -85,7 +82,7 @@ public class HttpTraversing extends BasicTraversing
     @Override
     public Traversed delete( ) throws IOException
     {
-        final URI uri = link.toUri( parameters );
+        final URI uri = selectedLink.toUri( parameters );
         final HttpDelete request = new HttpDelete( uri );
         return execute( request );
     }
@@ -93,7 +90,8 @@ public class HttpTraversing extends BasicTraversing
     @Override
     public Link asLink( )
     {
-        return Link.forUri( link.toUri( parameters ) );
+    	// TODO Should support partial expansion.
+        return Link.forUri( selectedLink.toUri( parameters ) );
     }
 
     private Traversed execute( final HttpUriRequest request ) throws IOException, ClientProtocolException

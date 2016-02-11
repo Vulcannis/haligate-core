@@ -12,7 +12,14 @@ import com.google.common.reflect.TypeToken;
 
 public abstract class BasicTraversing implements Traversing
 {
-	protected Map< String, String > requestHeaders = Maps.newHashMap( );
+	protected final Link selectedLink;
+	protected final Map< String, String > requestHeaders = Maps.newHashMap( );
+    protected final Map< String, Object > parameters = Maps.newHashMap( );
+
+	public BasicTraversing( final Link selectedLink )
+	{
+		this.selectedLink = selectedLink;
+	}
 
 	@Override
     public Traversing follow( final String... rels ) throws IOException
@@ -63,15 +70,17 @@ public abstract class BasicTraversing implements Traversing
     }
 
     @Override
-    public Traversed with( final String name, final Object value ) throws IOException
+    public Traversing with( final String name, final Object value )
     {
-        return get( ).with( name, value );
+        parameters.put( name, value );
+        return this;
     }
 
     @Override
-    public Traversed with( final Map< String, Object > parameters ) throws IOException
+    public Traversing with( final Map< String, Object > parameters ) throws IOException
     {
-    	return get( ).with( parameters );
+    	this.parameters.putAll( parameters );
+    	return this;
     }
 
     @Override
