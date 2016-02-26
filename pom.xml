@@ -13,6 +13,11 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>org.osgi</groupId>
+			<artifactId>osgi.annotation</artifactId>
+			<version>6.0.1</version>
+		</dependency>
+		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
 			<version>2.6.1</version>
@@ -37,7 +42,7 @@
 			<artifactId>icu4j</artifactId>
 			<version>56.1</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava-testlib</artifactId>
@@ -119,32 +124,19 @@
 				<version>2.2</version>
 			</plugin>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-enforcer-plugin</artifactId>
-				<version>1.4</version>
-				<dependencies>
-					<dependency>
-						<groupId>org.semver</groupId>
-						<artifactId>enforcer-rule</artifactId>
-						<version>0.9.33</version>
-					</dependency>
-				</dependencies>
+				<groupId>biz.aQute.bnd</groupId>
+				<artifactId>bnd-baseline-maven-plugin</artifactId>
+				<version>3.1.0</version>
+				<configuration>
+					<fullReport>true</fullReport>
+					<includeDistributionManagement>false</includeDistributionManagement>
+				</configuration>
 				<executions>
 					<execution>
-						<id>semantic-version-check</id>
-						<phase>verify</phase>
+						<id>baseline</id>
 						<goals>
-							<goal>enforce</goal>
+							<goal>baseline</goal>
 						</goals>
-						<configuration>
-							<rules>
-								<requireSemanticVersioningConformance
-									implementation="org.semver.enforcer.RequireSemanticVersioningConformance">
-									<dumpDetails>true</dumpDetails>
-									<previousVersion>3.0</previousVersion>
-								</requireSemanticVersioningConformance>
-							</rules>
-						</configuration>
 					</execution>
 				</executions>
 			</plugin>

@@ -4,9 +4,12 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 import com.google.common.base.Function;
 import com.google.common.reflect.TypeToken;
 
+@ProviderType
 public interface Traversed
 {
     public Resource< ? > asResource( ) throws IOException;

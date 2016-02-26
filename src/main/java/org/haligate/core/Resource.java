@@ -2,9 +2,12 @@ package org.haligate.core;
 
 import java.io.IOException;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 import com.google.common.collect.ListMultimap;
 import com.google.common.reflect.TypeToken;
 
+@ProviderType
 public interface Resource< T >
 {
     public Link getSelfLink( );

@@ -3,6 +3,9 @@ package org.haligate.core;
 import java.io.IOException;
 import java.util.Map;
 
+import org.osgi.annotation.versioning.ProviderType;
+
+@ProviderType
 public interface Traversing extends Traversed
 {
     public Traversed get( ) throws IOException;
