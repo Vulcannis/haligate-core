@@ -101,19 +101,25 @@ public class HttpTraversing extends BasicTraversing
             request.addHeader( entry.getKey( ), entry.getValue( ) );
         }
         try ( final CloseableHttpResponse response = config.httpClient.get( ).execute( request, config.context.get( ) ) ) {
+            final HttpEntity entity = response.getEntity( );
             final StatusLine statusLine = response.getStatusLine( );
             if( statusLine.getStatusCode( ) / 100 != 2 ) {
+                EntityUtils.consumeQuietly( entity );
                 throw new HttpResponseException( statusLine.getStatusCode( ), statusLine.getReasonPhrase( ) );
             }
-            final ListMultimap< String, String > headers = parseHeaders( response );
-            final HttpEntity entity = response.getEntity( );
-            final String responseContent;
-            if( entity == null ) {
-            	responseContent = null;
-            } else {
-            	responseContent = loadEntity( entity );
+            try {
+                final ListMultimap< String, String > headers = parseHeaders( response );
+                final String responseContent;
+                if( entity == null ) {
+                    responseContent = null;
+                } else {
+                    responseContent = loadEntity( entity );
+                }
+                return new HalTraversed( config, responseContent, headers );
             }
-            return new HalTraversed( config, responseContent, headers );
+            finally {
+                EntityUtils.consume( entity );
+            }
         }
     }
 
