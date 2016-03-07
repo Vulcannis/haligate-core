@@ -4,12 +4,12 @@
 
 	<groupId>org.haligate</groupId>
 	<artifactId>haligate-core</artifactId>
-	<version>3.0.1</version>
+	<version>3.0.2-SNAPSHOT</version>
 	
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<osgi.version>3.0.1</osgi.version>
+		<osgi.version>3.0.2</osgi.version>
 	</properties>
 
 	<dependencies>
