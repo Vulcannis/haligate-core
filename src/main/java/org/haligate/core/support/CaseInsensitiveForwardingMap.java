@@ -3,7 +3,6 @@ package org.haligate.core.support;
 import java.io.Serializable;
 import java.util.*;
 
-import com.google.common.base.Supplier;
 import com.google.common.collect.*;
 
 @SuppressWarnings( "serial" )
@@ -81,20 +80,15 @@ public class CaseInsensitiveForwardingMap< V > extends ForwardingMap< String, V 
     @Override
     public V put( final String key, final V value )
     {
-        inner.remove( originalKeys.put( upper( key ), key ) );
-        return inner.put( key, value );
+        final V oldValue = inner.remove( originalKeys.put( upper( key ), key ) );
+        inner.put( key, value );
+        return oldValue;
     }
 
     public static < T > ListMultimap< String, T > newCaseInsensitiveKeyedListMultimap( )
     {
         final Map< String, Collection< T > > map = new CaseInsensitiveForwardingMap< Collection< T > >( );
-        final ListMultimap< String, T > multimap = Multimaps.newListMultimap( map, new Supplier< List< T > >( ) {
-            @Override
-            public List< T > get( )
-            {
-                return Lists.newArrayList( );
-            }
-        } );
+        final ListMultimap< String, T > multimap = Multimaps.newListMultimap( map, ( ) -> Lists.newArrayList( ) );
         return multimap;
     }
 }
