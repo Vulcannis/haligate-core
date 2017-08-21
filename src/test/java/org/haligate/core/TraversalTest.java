@@ -20,7 +20,8 @@ import org.hamcrest.collection.IsMapContaining;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.*;
+import com.google.common.base.Charsets;
+import com.google.common.base.Optional;
 import com.google.common.net.HttpHeaders;
 import com.google.common.reflect.TypeToken;
 
