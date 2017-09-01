@@ -1,12 +1,14 @@
 package org.haligate.core;
 
+import java.util.function.Supplier;
+
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.*;
 import org.apache.http.protocol.HttpContext;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.*;
+import com.google.common.base.Suppliers;
 
 public class Haligate
 {

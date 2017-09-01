@@ -1,13 +1,13 @@
 package org.haligate.core;
 
 import java.net.URI;
+import java.util.function.Supplier;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.protocol.HttpContext;
 import org.haligate.core.impl.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Supplier;
 
 public class Client extends Config
 {
