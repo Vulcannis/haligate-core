@@ -1,6 +1,6 @@
 package org.haligate.core.impl;
 
-import java.io.IOException;
+import java.io.UncheckedIOException;
 
 import org.haligate.core.*;
 
@@ -19,13 +19,13 @@ public class EmbeddedTraversed extends BasicTraversed
     }
 
     @Override
-    public Resource< ? > asResource( ) throws IOException
+    public Resource< ? > asResource( ) throws UncheckedIOException
     {
         return parentResource.getEmbeddedResourceFor( embeddedLink );
     }
 
     @Override
-    public < T > Resource< T > asResource( final Class< T > contentType ) throws IOException
+    public < T > Resource< T > asResource( final Class< T > contentType ) throws UncheckedIOException
     {
         return parentResource.getEmbeddedResourceFor( embeddedLink, contentType );
     }

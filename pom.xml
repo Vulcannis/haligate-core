@@ -4,17 +4,18 @@
 
 	<groupId>org.haligate</groupId>
 	<artifactId>haligate-core</artifactId>
-	<version>4.0.0</version>
+	<version>4.1.0-SNAPSHOT</version>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<osgi.version>3.0.2</osgi.version>
+		<osgi.version>4.1.0</osgi.version>
 
 		<jackson-databind.version>2.9.0.pr4</jackson-databind.version>
 		<guava.version>23.0</guava.version>
 		<httpclient.version>4.5.3</httpclient.version>
 		<handy-uri-templates.version>2.1.6</handy-uri-templates.version>
 		<icu4j.version>59.1</icu4j.version>
+		<reactor-core.version>3.1.0.RELEASE</reactor-core.version>
 	</properties>
 
 	<dependencies>
@@ -47,6 +48,11 @@
 			<groupId>com.ibm.icu</groupId>
 			<artifactId>icu4j</artifactId>
 			<version>${icu4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.projectreactor</groupId>
+			<artifactId>reactor-core</artifactId>
+			<version>${reactor-core.version}</version>
 		</dependency>
 
 		<dependency>

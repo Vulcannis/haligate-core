@@ -1,6 +1,6 @@
 package org.haligate.core.impl;
 
-import java.io.IOException;
+import java.io.UncheckedIOException;
 
 import org.haligate.core.*;
 
@@ -15,7 +15,7 @@ public class EmbeddedTraversing extends HttpTraversing
     }
 
     @Override
-    public Traversed get( ) throws IOException
+    public Traversed get( ) throws UncheckedIOException
     {
         return new EmbeddedTraversed( config, parentResource, selectedLink );
     }

@@ -1,6 +1,6 @@
 package org.haligate.core.impl;
 
-import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.util.*;
 import java.util.regex.*;
@@ -10,6 +10,9 @@ import org.haligate.core.*;
 import com.google.common.base.*;
 import com.google.common.collect.*;
 import com.google.common.reflect.TypeToken;
+
+import reactor.core.publisher.*;
+import reactor.util.function.Tuples;
 
 public abstract class BasicTraversed implements Traversed
 {
@@ -26,40 +29,35 @@ public abstract class BasicTraversed implements Traversed
 
     @SuppressWarnings( "unchecked" )
     @Override
-    public < T > Resource< T > asResource( final TypeToken< T > contentType ) throws IOException
+    public < T > Resource< T > asResource( final TypeToken< T > contentType ) throws UncheckedIOException
     {
         return (Resource< T >)asResource( contentType.getRawType( ) );
     }
 
     @Override
-    public < T > T asObject( final Class< T > contentType ) throws IOException
+    public < T > T asObject( final Class< T > contentType ) throws UncheckedIOException
     {
         return asResource( contentType ).getBody( );
     }
 
     @Override
-    public < T > T asObject( final TypeToken< T > contentType ) throws IOException
+    public < T > T asObject( final TypeToken< T > contentType ) throws UncheckedIOException
     {
         return asResource( contentType ).getBody( );
     }
 
     @Override
-    public Traversing follow( final String... rels ) throws IOException
+    public Traversing follow( final String... rels ) throws UncheckedIOException
     {
         return follow( rels, 0 );
     }
 
-    protected Traversing follow( final String[ ] rels, final int index ) throws IOException
+    protected Traversing follow( final String[ ] rels, final int index ) throws UncheckedIOException
     {
         final Resource< ? > resource = asResource( );
         final Link selectedLink = determineLink( rels[ index ], resource );
 
-        final Traversing traversing;
-        if( resource.hasEmbeddedResourceFor( selectedLink ) ) {
-            traversing = new EmbeddedTraversing( config, resource, selectedLink );
-        } else {
-            traversing = new HttpTraversing( config, selectedLink );
-        }
+        final Traversing traversing = followLink( resource, selectedLink );
 
         if( index < rels.length - 1 ) {
             return ( (BasicTraversed)traversing.get( ) ).follow( rels, index + 1 );
@@ -68,19 +66,36 @@ public abstract class BasicTraversed implements Traversed
         }
     }
 
+	private Traversing followLink( final Resource< ? > resource, final Link selectedLink )
+	{
+		final Traversing traversing;
+        if( resource.hasEmbeddedResourceFor( selectedLink ) ) {
+            traversing = new EmbeddedTraversing( config, resource, selectedLink );
+        } else {
+            traversing = new HttpTraversing( config, selectedLink );
+        }
+		return traversing;
+	}
+
+    @Override
+	public Flux< Traversing > followMany( final String rel ) throws UncheckedIOException
+	{
+		return Mono
+			.just( asResource( ) )
+			.flatMapMany( r -> Flux.fromIterable( r.getLinks( ).get( rel ) ).map( x -> Tuples.of( r, x ) ) )
+			.map( x -> followLink( x.getT1( ), x.getT2( ) ) )
+			;
+	}
+
     @Override
     public Traversing followHeader( final String header )
     {
-        return followHeader( header, new Function< List< String >, URI >( ) {
-            @Override
-            public URI apply( final List< String > input )
-            {
-                if( input.size( ) != 1 ) {
-                    throw new LinkResolutionException( "Cannot follow header '" + header + "', need exactly one value but was: " + input );
-                }
-                return URI.create( input.get( 0 ) );
-            }
-        } );
+        return followHeader( header, input -> {
+		    if( input.size( ) != 1 ) {
+		        throw new LinkResolutionException( "Cannot follow header '" + header + "', need exactly one value but was: " + input );
+		    }
+		    return URI.create( input.get( 0 ) );
+		} );
     }
 
     @Override
@@ -95,8 +110,10 @@ public abstract class BasicTraversed implements Traversed
         if( !matcher.matches( ) ) {
             throw new LinkResolutionException( "Cannot follow relation '" + rel + "'" );
         }
-        final String relName = matcher.group( 1 ), secondaryIndex = matcher.group( 2 ), secondaryKeyAttribute = matcher.group( 3 ), secondaryKeyValue = matcher
-            .group( 4 );
+        final String relName = matcher.group( 1 ),
+        	secondaryIndex = matcher.group( 2 ),
+        	secondaryKeyAttribute = matcher.group( 3 ),
+        	secondaryKeyValue = matcher.group( 4 );
         final List< Link > locations = resource.getLinks( ).get( relName );
         final Link selectedLink;
         if( locations.size( ) == 0 ) {

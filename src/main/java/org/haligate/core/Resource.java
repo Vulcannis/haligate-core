@@ -1,6 +1,6 @@
 package org.haligate.core;
 
-import java.io.IOException;
+import java.io.UncheckedIOException;
 
 import org.osgi.annotation.versioning.ProviderType;
 
@@ -18,11 +18,11 @@ public interface Resource< T >
 
     public boolean hasEmbeddedResourceFor( final Link link );
 
-    public Resource< ? > getEmbeddedResourceFor( final Link link ) throws IOException;
+    public Resource< ? > getEmbeddedResourceFor( final Link link ) throws UncheckedIOException;
 
-    public < S > Resource< S > getEmbeddedResourceFor( final Link link, final Class< S > type ) throws IOException;
+    public < S > Resource< S > getEmbeddedResourceFor( final Link link, final Class< S > type ) throws UncheckedIOException;
 
-    public < S > Resource< S > getEmbeddedResourceFor( final Link link, final TypeToken< S > type ) throws IOException;
+    public < S > Resource< S > getEmbeddedResourceFor( final Link link, final TypeToken< S > type ) throws UncheckedIOException;
 
     public ListMultimap< String, String > getHeaders( );
 }

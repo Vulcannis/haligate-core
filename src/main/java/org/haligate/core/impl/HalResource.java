@@ -4,7 +4,7 @@ import static com.google.common.collect.Multimaps.unmodifiableListMultimap;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonMap;
 
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -26,25 +26,35 @@ public class HalResource< T > implements Resource< T >
     private final Map< Link, JsonNode > embeddedResources = Maps.newHashMap( );
     private final ListMultimap< String, String > headers;
 
-    protected HalResource( final Config config, final String text, final Class< T > type, final ListMultimap< String, String > headers  ) throws IOException
+    protected HalResource( final Config config, final String text, final Class< T > type, final ListMultimap< String, String > headers  ) throws UncheckedIOException
     {
         this.config = config;
         this.text = text;
         this.headers = unmodifiableListMultimap( headers );
         final ObjectMapper mapper = config.mapper.get( ).copy( );
-        final JsonNode root = mapper.readTree( text );
-        readCurries( curieTemplates, mapper, root );
-        body = init( config, mapper, root, type, curieTemplates, links, embeddedResources );
+        try {
+	        final JsonNode root = mapper.readTree( text );
+	        readCurries( curieTemplates, mapper, root );
+	        body = init( config, mapper, root, type, curieTemplates, links, embeddedResources );
+        }
+        catch( final IOException e ) {
+        	throw new UncheckedIOException( e );
+        }
     }
 
-    protected HalResource( final Config config, final JsonNode root, final Class< T > type, final Map< String, UriTemplate > curieTemplates ) throws IOException
+    protected HalResource( final Config config, final JsonNode root, final Class< T > type, final Map< String, UriTemplate > curieTemplates ) throws UncheckedIOException
     {
         this.config = config;
         this.text = root.toString( );
         this.headers = ImmutableListMultimap.of( );
         this.curieTemplates.putAll( curieTemplates );
         final ObjectMapper mapper = config.mapper.get( ).copy( );
-        body = init( config, mapper, root, type, curieTemplates, links, embeddedResources );
+        try {
+			body = init( config, mapper, root, type, curieTemplates, links, embeddedResources );
+		}
+		catch( final IOException e ) {
+			throw new UncheckedIOException( e );
+		}
     }
 
     private static < T > T init( final Config config, final ObjectMapper mapper, final JsonNode root, final Class< T > type, final Map< String, UriTemplate > curieTemplates, final ListMultimap< String, Link > links, final Map< Link, JsonNode > embeddedResources ) throws IOException
@@ -147,13 +157,13 @@ public class HalResource< T > implements Resource< T >
     }
 
     @Override
-    public Resource< ? > getEmbeddedResourceFor( final Link link ) throws IOException
+    public Resource< ? > getEmbeddedResourceFor( final Link link ) throws UncheckedIOException
     {
         return getEmbeddedResourceFor( link, Void.class );
     }
 
     @Override
-    public < S > Resource< S > getEmbeddedResourceFor( final Link link, final Class< S > type ) throws IOException
+    public < S > Resource< S > getEmbeddedResourceFor( final Link link, final Class< S > type ) throws UncheckedIOException
     {
         final JsonNode resourceNode = embeddedResources.get( link );
         if( resourceNode == null ) {
@@ -165,7 +175,7 @@ public class HalResource< T > implements Resource< T >
 
     @SuppressWarnings( "unchecked" )
 	@Override
-    public < S > Resource< S > getEmbeddedResourceFor( final Link link, final TypeToken< S > type ) throws IOException
+    public < S > Resource< S > getEmbeddedResourceFor( final Link link, final TypeToken< S > type ) throws UncheckedIOException
     {
     	return (Resource< S >)getEmbeddedResourceFor( link, type.getRawType( ) );
     }

@@ -1,20 +1,19 @@
 package org.haligate.core.impl;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.http.*;
-import org.apache.http.client.*;
+import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.methods.*;
 import org.apache.http.entity.*;
 import org.apache.http.util.EntityUtils;
 import org.haligate.core.*;
 import org.haligate.core.support.CaseInsensitiveForwardingMap;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.*;
 import com.google.common.collect.*;
 import com.google.common.net.HttpHeaders;
@@ -33,7 +32,7 @@ public class HttpTraversing extends BasicTraversing
     }
 
     @Override
-    public Traversed get( ) throws IOException
+    public Traversed get( ) throws UncheckedIOException
     {
         final URI uri = selectedLink.toUri( parameters );
         final HttpGet request = new HttpGet( uri );
@@ -41,7 +40,7 @@ public class HttpTraversing extends BasicTraversing
     }
 
     @Override
-    public Traversed post( final Object content ) throws IOException
+    public Traversed post( final Object content ) throws UncheckedIOException
     {
         final HttpPost request = new HttpPost( );
         prepareRequestContent( request, content );
@@ -50,7 +49,7 @@ public class HttpTraversing extends BasicTraversing
         return execute( request );
     }
 
-    private void prepareRequestContent( final HttpEntityEnclosingRequest request, final Object content ) throws JsonProcessingException
+    private void prepareRequestContent( final HttpEntityEnclosingRequest request, final Object content ) throws UncheckedIOException
     {
         if( content instanceof Optional ) {
             if( ( (Optional< ? >)content ).isPresent( ) ) {
@@ -64,13 +63,18 @@ public class HttpTraversing extends BasicTraversing
         } else if( content instanceof HttpEntity ) {
             request.setEntity( (HttpEntity)content );
         } else {
-            final String requestContent = config.mapper.get( ).writeValueAsString( content );
-            request.setEntity( new StringEntity( requestContent, ContentType.APPLICATION_JSON ) );
+        	try {
+        		final String requestContent = config.mapper.get( ).writeValueAsString( content );
+        		request.setEntity( new StringEntity( requestContent, ContentType.APPLICATION_JSON ) );
+        	}
+        	catch( final IOException e ) {
+        		throw new UncheckedIOException( e );
+        	}
         }
     }
 
     @Override
-    public Traversed put( final Object content ) throws IOException
+    public Traversed put( final Object content ) throws UncheckedIOException
     {
         final HttpPut request = new HttpPut( );
         prepareRequestContent( request, content );
@@ -80,7 +84,7 @@ public class HttpTraversing extends BasicTraversing
     }
 
     @Override
-    public Traversed delete( ) throws IOException
+    public Traversed delete( ) throws UncheckedIOException
     {
         final URI uri = selectedLink.toUri( parameters );
         final HttpDelete request = new HttpDelete( uri );
@@ -94,7 +98,7 @@ public class HttpTraversing extends BasicTraversing
         return Link.forUri( selectedLink.toUri( parameters ) );
     }
 
-    private Traversed execute( final HttpUriRequest request ) throws IOException, ClientProtocolException
+    private Traversed execute( final HttpUriRequest request ) throws UncheckedIOException
     {
         request.addHeader( HttpHeaders.ACCEPT, Haligate.jsonHalContentType.getMimeType( ) );
         for( final Entry< String, String > entry: requestHeaders.entrySet( ) ) {
@@ -120,6 +124,9 @@ public class HttpTraversing extends BasicTraversing
             finally {
                 EntityUtils.consume( entity );
             }
+        }
+        catch( final IOException e ) {
+        	throw new UncheckedIOException( e );
         }
     }
 
