@@ -4,11 +4,11 @@
 
 	<groupId>org.haligate</groupId>
 	<artifactId>haligate-core</artifactId>
-	<version>4.1.1-SNAPSHOT</version>
+	<version>4.1.1</version>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<osgi.version>4.1.0</osgi.version>
+		<osgi.version>4.1.1</osgi.version>
 
 		<jackson-databind.version>2.9.2</jackson-databind.version>
 		<guava.version>25.1-jre</guava.version>
