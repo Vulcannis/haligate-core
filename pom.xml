@@ -11,7 +11,7 @@
 		<osgi.version>4.1.0</osgi.version>
 
 		<jackson-databind.version>2.9.2</jackson-databind.version>
-		<guava.version>23.3-jre</guava.version>
+		<guava.version>25.1-jre</guava.version>
 		<httpclient.version>4.5.3</httpclient.version>
 		<handy-uri-templates.version>2.1.6</handy-uri-templates.version>
 		<icu4j.version>59.1</icu4j.version>
