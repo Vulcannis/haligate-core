@@ -4,20 +4,20 @@
 
 	<groupId>org.haligate</groupId>
 	<artifactId>haligate-core</artifactId>
-	<version>4.1.1</version>
+	<version>4.1.2</version>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<osgi.version>4.1.1</osgi.version>
+		<osgi.version>4.1.2</osgi.version>
 
-		<jackson-databind.version>2.9.2</jackson-databind.version>
-		<guava.version>25.1-jre</guava.version>
-		<httpclient.version>4.5.3</httpclient.version>
-		<handy-uri-templates.version>2.1.6</handy-uri-templates.version>
-		<icu4j.version>59.1</icu4j.version>
-		<reactor-core.version>3.1.1.RELEASE</reactor-core.version>
+		<jackson-databind.version>2.9.8</jackson-databind.version>
+		<guava.version>27.0.1-jre</guava.version>
+		<httpclient.version>4.5.6</httpclient.version>
+		<handy-uri-templates.version>2.1.7</handy-uri-templates.version>
+		<icu4j.version>63.1</icu4j.version>
+		<reactor-core.version>3.2.3.RELEASE</reactor-core.version>
 		<jadler-all.version>1.3.0</jadler-all.version>
-		<bnd.version>3.5.0</bnd.version>
+		<bnd.version>4.1.0</bnd.version>
 	</properties>
 
 	<dependencies>
@@ -156,6 +156,7 @@
 				<artifactId>bnd-baseline-maven-plugin</artifactId>
 				<version>${bnd.version}</version>
 				<configuration>
+					<skip>${skip.baseline}</skip>
 					<fullReport>true</fullReport>
 					<includeDistributionManagement>false</includeDistributionManagement>
 				</configuration>
